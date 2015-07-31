@@ -348,7 +348,7 @@ def _fit(aln, tree, model, gc):
     lf.setAlignment(aln)
     _populate_parameters(lf, last_lf, **sp_kw)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
-    flat_lf = nest.deflate_likelihood_function(lf, save_jsd=False)
+    flat_lf = nest.deflate_likelihood_function(lf)
     flat_lf['hard_up'] = _is_hard_up(lf)
     return flat_lf
 
