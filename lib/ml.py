@@ -27,7 +27,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.2-dev'
+__version__ = '0.0.3-dev'
 
 class GeneralCalcQ(object):
     def calcQ(self, word_probs, mprobs_matrix, *params):
@@ -363,12 +363,17 @@ def ml(doc, model='NG', gc=None, **kw):
 def ml_bootstraps(empirical, num_bootstraps=100, use_mpi=True):
     assert empirical['model'] in \
         ('NG', 'NFG', 'MG94G', 'Y98G', 'Y98GTR', 'CNFGTR', 'MG94GTR')
-    elf = nest.inflate_likelihood_function(empirical['lf'],
-            eval(empirical['model']))
-
+    gc = get_genetic_code(empirical['gc'].encode('utf-8'))
+    model = lambda **kw: eval(empirical['model'])(gc=gc, **kw)
+    elf = nest.inflate_likelihood_function(empirical['lf'], model)
+    
+    aln_length = empirical['lf']['aln_length']
+    if empirical['model'] != 'NG': # for unexpected simulateAlignment behaviour
+        aln_length = int(aln_length/3)
+        assert empirical['lf']['aln_length'] == 3*aln_length
     def bootstrap(empdoc):
-        aln = elf.simulateAlignment(empirical['lf']['aln_length'])
-        simdoc = {'aln' : aln, 'tree' : empdoc['lf']['tree']}
+        aln = elf.simulateAlignment(aln_length)
+        simdoc = {'aln' : str(aln), 'tree' : empdoc['lf']['tree']}
         result = ml(simdoc, **empdoc)
         return result['lf']['gs']
 

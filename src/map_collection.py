@@ -20,7 +20,7 @@ __license__ = 'GPLv3'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.6-dev'
+__version__ = '0.0.7-dev'
 
 _versions = {
         'map_collection'    : __version__,
@@ -63,8 +63,6 @@ def setup():
             help='Log name (default output.log)', default='log')
     parser.add_argument('-s', '--start_over', action='store_true',
             help='Whether to nuke the target collection before starting')
-    parser.add_argument('-B', '--batch_size', type=int, default=10,
-            help='Batch size for reading from input_collection (default 10)')
     parser.add_argument('-k', '--kwargs_file', type=os.path.expanduser,
             help='JSON File that contains kwargs to be fed to the function')
     parser.add_argument('-m', '--no_mpi_main_loop', action='store_true',
@@ -114,8 +112,7 @@ def main():
         [col.drop() for col in output_collections]
 
     map_collection(args.function, input_collections, output_collections, 
-            batch_size=args.batch_size, no_mpi=args.no_mpi_main_loop, 
-            **args.kwargs)
+            no_mpi=args.no_mpi_main_loop, **args.kwargs)
 
     return 0
 

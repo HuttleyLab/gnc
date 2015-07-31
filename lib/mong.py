@@ -2,6 +2,8 @@ from traceback import format_exc
 import logging
 
 from pymongo import MongoClient
+from pymongo.errors import CursorNotFound
+from pymongo.collection import Collection
 
 import masterslave
 
@@ -12,7 +14,7 @@ __license__ = 'GPLv3'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.7-dev'
+__version__ = '0.0.8-dev'
 
 def get_collection(db_host=None, collection=None, **kw):
     try:
@@ -23,8 +25,13 @@ def get_collection(db_host=None, collection=None, **kw):
         logging.critical('Couldn\'t get connection to ' + db_host + ':\n' + \
                 format_exc())
 
-def map_collection(func, input_collections, output_collections, 
-        batch_size=150, no_mpi=False, **kwargs):
+def map_collection(*args, **kwargs):
+    collection_mapped = False
+    while not collection_mapped:
+        collection_mapped = _map_collection(*args, **kwargs)
+
+def _map_collection(func, input_collections, output_collections, no_mpi=False,
+        **kwargs):
 
     input_ids = [set(r['_id'] for r in c.find({}, {'_id':True}))
         for c in input_collections]
@@ -64,10 +71,17 @@ def map_collection(func, input_collections, output_collections,
             for c in output_collections:
                 c.remove({'_id' : _id})
 
+    no_timeout = True
+    def safe_find(collection, *args):
+        try:
+            for doc in collection.find(*args):
+                yield doc
+        except CursorNotFound:
+            no_timeout = False
+
     if masterslave.am_master() or no_mpi:
         id_filter = {'_id' : { '$in' : list(to_be_mapped) } }
-        docs = [c.find(id_filter).batch_size(batch_size) 
-                for c in input_collections]
+        docs = [safe_find(c, id_filter) for c in input_collections]
     else:
         docs = []
 
@@ -75,6 +89,8 @@ def map_collection(func, input_collections, output_collections,
         map(insert, *docs)
     else:
         masterslave.map(insert, *docs)
+
+    return no_timeout
 
 if __name__ == '__main__':
     pass
