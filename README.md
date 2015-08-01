@@ -14,8 +14,12 @@ All code should be run in place; all examples below assume that you're in the sr
 #### Dependencies
 * [pymongo](https://api.mongodb.org/python/current/) v3.0.2 or later
 * [numpy](http://www.numpy.org) v1.9.2 or later
-* [pycogent](https://github.com/pycogent/pycogent/) commit `bded5f0661380b0557edab2415cb75108a46e397` or later
+* [pycogent](https://github.com/pycogent/pycogent/) commit bded5f0661380b0557edab2415cb75108a46e397 or later
 * [MongoDB](https://www.mongodb.org) v3.0.1 or later
+
+#### Optional dependencies (highly recommended)
+* [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface) whichever implementation you prefer
+* [mpi4py](http://mpi4py.scipy.org) v1.3.1 or later
 
 #### Database configuration
 All examples below assume that you have a mongodb server running on `$DBHOST`.
