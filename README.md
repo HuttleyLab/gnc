@@ -32,7 +32,7 @@ Tests are forthcoming.
 To fit the CNFGTR (Yap et al., 2010) model to a collection of alignments in (gzipped) fasta files in `$ALNDIR` with the tree topology defined in `$NWKFILE`:
 
 ```
-python consume.py -i $ALNDIR -o example_db.data -L DEBUG -b $DB_HOST -a 1500 -t `$NWKFILE`
+python consume.py -i $ALNDIR -o example_db.data -L DEBUG -b $DB_HOST -a 1500 -t $NWKFILE
 python map_collection.py -i example_db.data -b $DB_HOST -L DEBUG -f ml.ml -o example_db.CNFGTR -k ../config/CNFGTR.json
 ```
 
