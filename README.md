@@ -33,7 +33,7 @@ To fit the CNFGTR (Yap et al., 2010) model to a collection of alignments in (gzi
 
 ```
 python consume.py -i $ALNDIR -o example_db.data -L DEBUG -b $DB_HOST -a 1500 -t `$NWKFILE`
-python map_collection.py -i example_db.data -b $DB_HOST -L DEBUG -B 1 -f ml.ml -o example_db.CNFGTR -k ../config/CNFGTR.json
+python map_collection.py -i example_db.data -b $DB_HOST -L DEBUG -f ml.ml -o example_db.CNFGTR -k ../config/CNFGTR.json
 ```
 
 And to see a result using, for example, a python session:
