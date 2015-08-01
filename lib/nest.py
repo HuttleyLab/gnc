@@ -22,12 +22,12 @@ from general_ben import GeneralBen
 from toposort import sort
 
 __author__ = 'Ben Kaehler'
-__copyright__ = 'Copyright 2014, Ben Kaehler'
+__copyright__ = 'Copyright 2015, Ben Kaehler'
 __credits__ = ['Ben Kaehler', 'Gavin Huttley']
-__license__ = 'GPL'
+__license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
-__status__ = 'Production'
+__status__ = 'Development'
 __version__ = '0.0.29-dev'
 
 def expected_no_subs(p0, Q, t):

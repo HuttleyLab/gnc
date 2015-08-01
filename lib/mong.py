@@ -10,7 +10,7 @@ import masterslave
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2015, Ben Kaehler'
 __credits__ = ['Ben Kaehler']
-__license__ = 'GPLv3'
+__license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
