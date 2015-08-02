@@ -23,29 +23,33 @@ All code should be run in place; all examples below assume that you're in the sr
 * [mpi4py](http://mpi4py.scipy.org) v1.3.1 or later
 
 #### Database configuration
-All examples below assume that you have a mongodb server running on `$DBHOST`.
+The example below assumes that you have a mongodb server running on `$DB_HOST`.
 
 #### How to run tests
 Tests are forthcoming.
 
 #### Usage example
-To fit the CNFGTR (Yap et al., 2010) model to a collection of alignments in (gzipped) fasta files in `$ALNDIR` with the tree topology defined in `$NWKFILE`:
+To fit the CNFGTR (Yap et al., 2010) model to a collection of alignments in (gzipped) fasta files in `$ALN_DIR` with the tree topology defined in `$NWK_FILE`:
 
 ```
-python consume.py -i $ALNDIR -o example_db.data -L DEBUG -b $DB_HOST -a 1500 -t $NWKFILE
+#!sh
+
+python consume.py -i $ALN_DIR -o example_db.data -L DEBUG -b $DB_HOST -a 1500 -t $NWK_FILE
 python map_collection.py -i example_db.data -b $DB_HOST -L DEBUG -f ml.ml -o example_db.CNFGTR -k ../config/CNFGTR.json
 ```
 
 And to see a result using, for example, a python session:
 
 ```
+#!python
+
 import os
 from pymongo import MongoClient
 from cogent.evolve.models import CNFGTR
 import lib
 import nest
 
-client = MongoClient('mongodb://' + os.getenv('DBHOST'))
+client = MongoClient('mongodb://' + os.getenv('DB_HOST'))
 flat_lf = client.example_db.CNFGTR.find_one()['lf']
 lf = nest.inflate_likelihood_function(flat_lf, CNFGTR)
 print lf
