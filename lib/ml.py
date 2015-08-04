@@ -19,6 +19,7 @@ from cogent.core.genetic_code import GeneticCodes, DEFAULT
 from timedec import timed
 import masterslave
 import nest
+assert nest.__version__ == '0.0.30-dev' # a bit hacky but will do for now
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2015, Ben Kaehler'
@@ -27,7 +28,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.3-dev'
+__version__ = '0.0.4-dev'
 
 class GeneralCalcQ(object):
     def calcQ(self, word_probs, mprobs_matrix, *params):

@@ -8,9 +8,9 @@ from traceback import format_exc
 from warnings import filterwarnings
 from json import load
 
+import lib
 import masterslave
 from monglog import setup_logging, __version__ as monglog_version
-import lib
 from mong import get_collection, map_collection, __version__ as mong_version
 
 __author__ = 'Ben Kaehler'
