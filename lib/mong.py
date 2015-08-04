@@ -14,7 +14,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.8-dev'
+__version__ = '0.0.9-dev'
 
 def get_collection(db_host=None, collection=None, **kw):
     try:
@@ -25,35 +25,34 @@ def get_collection(db_host=None, collection=None, **kw):
         logging.critical('Couldn\'t get connection to ' + db_host + ':\n' + \
                 format_exc())
 
-def map_collection(*args, **kwargs):
-    collection_mapped = False
-    while not collection_mapped:
-        collection_mapped = _map_collection(*args, **kwargs)
-
-def _map_collection(func, input_collections, output_collections, no_mpi=False,
+def map_collection(func, input_collections, output_collections, no_mpi=False,
         **kwargs):
 
-    input_ids = [set(r['_id'] for r in c.find({}, {'_id':True}))
-        for c in input_collections]
-    common_ids = set.intersection(*input_ids)
+    if masterslave.am_master():
+        input_ids = [set(r['_id'] for r in c.find({}, {'_id':True}))
+            for c in input_collections]
+        common_ids = set.intersection(*input_ids)
 
-    skip = set.union(*input_ids) - common_ids
-    if len(skip) > 0:
-        logging.warning({'skipping' : ', '.join(map(repr, skip)),
-                'reason' : 'inputs underrepresented'})
+        skip = set.union(*input_ids) - common_ids
+        if len(skip) > 0:
+            logging.warning({'skipping' : ', '.join(map(repr, skip)),
+                    'reason' : 'inputs underrepresented'})
 
-    output_ids = set.union(*[set(r['_id'] for r in c.find({}, {'_id':True}))
-        for c in output_collections])
+        output_ids = set.union(*[set(r['_id'] for r in c.find({}, {'_id':True}))
+            for c in output_collections])
 
-    skip = common_ids.intersection(output_ids)
-    if len(skip) > 0:
-        logging.warning({'skipping' : ', '.join(map(repr, skip)),
-                'reason' : 'results exist'})
+        skip = common_ids.intersection(output_ids)
+        if len(skip) > 0:
+            logging.warning({'skipping' : ', '.join(map(repr, skip)),
+                    'reason' : 'results exist'})
 
-    to_be_mapped = common_ids - skip
+        to_be_mapped = common_ids - skip
+    else:
+        to_be_mapped = []
     
-    def insert(*docs):
+    def insert(_id):
         try:
+            docs = [col.find_one({'_id':_id}) for col in input_collections]
             ins_docs = func(*docs, **kwargs)
             if isinstance(ins_docs, dict) or ins_docs is None:
                 ins_docs = [ins_docs]
@@ -71,26 +70,10 @@ def _map_collection(func, input_collections, output_collections, no_mpi=False,
             for c in output_collections:
                 c.remove({'_id' : _id})
 
-    no_timeout = True
-    def safe_find(collection, *args):
-        try:
-            for doc in collection.find(*args):
-                yield doc
-        except CursorNotFound:
-            no_timeout = False
-
-    if masterslave.am_master() or no_mpi:
-        id_filter = {'_id' : { '$in' : list(to_be_mapped) } }
-        docs = [safe_find(c, id_filter) for c in input_collections]
-    else:
-        docs = []
-
     if no_mpi:
-        map(insert, *docs)
+        map(insert, to_be_mapped)
     else:
-        masterslave.map(insert, *docs)
-
-    return no_timeout
+        masterslave.map(insert, to_be_mapped)
 
 if __name__ == '__main__':
     pass

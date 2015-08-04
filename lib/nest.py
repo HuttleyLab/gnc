@@ -28,7 +28,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.29-dev'
+__version__ = '0.0.30-dev'
 
 def expected_no_subs(p0, Q, t):
     try:
@@ -46,8 +46,7 @@ def get_pi_for_edge(lf, name):
     return lf.getMotifProbsByNode(edges=[parent])[parent].asarray()
 
 def get_expected_no_subs(lf):
-    if lf.model.name.startswith('General'):
-        assert not lf.model.with_rate, lf.model.name + ' plus Gamma not supported'
+    if not lf.model.with_rate:
         edges = get_edge_names(lf)
         ens = {}
         for edge in edges:
