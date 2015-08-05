@@ -7,6 +7,10 @@ from importlib import import_module
 from traceback import format_exc
 from warnings import filterwarnings
 from json import load
+from warnings import filterwarnings
+
+os.environ['DONT_USE_MPI'] = '1'
+filterwarnings('ignore', 'Not using MPI', UserWarning)
 
 import lib
 import masterslave
@@ -20,7 +24,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.7-dev'
+__version__ = '0.0.8-dev'
 
 _versions = {
         'map_collection'    : __version__,

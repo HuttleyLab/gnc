@@ -23,7 +23,7 @@ __license__ = 'GPL version 3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.4-dev'
+__version__ = '0.0.5-dev'
 
 _versions = {
         'consume' : __version__,
@@ -64,6 +64,9 @@ def get_aln(filename, codon_position=None, **kw):
 
     sequences = sequences.filtered(lambda x: set(''.join(x)) <= set(DNA),
             motif_length=1 if codon_position > 0 else 3)
+
+    sequences = {t.replace('.', '_'):s for t, s in sequences.todict().items()}
+    sequences = LoadSeqs(data=sequences)
 
     return sequences
 
