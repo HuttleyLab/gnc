@@ -14,7 +14,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.9-dev'
+__version__ = '0.0.10-dev'
 
 def get_collection(db_host=None, collection=None, **kw):
     try:
@@ -65,7 +65,6 @@ def map_collection(func, input_collections, output_collections, no_mpi=False,
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
-            _id = docs[0]['_id']
             logging.warning({'skipping' : repr(_id), 'reason' : format_exc()})
             for c in output_collections:
                 c.remove({'_id' : _id})
