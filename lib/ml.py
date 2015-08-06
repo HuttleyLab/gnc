@@ -28,7 +28,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.4-dev'
+__version__ = '0.0.5-dev'
 
 class GeneralCalcQ(object):
     def calcQ(self, word_probs, mprobs_matrix, *params):
@@ -354,10 +354,15 @@ def _fit(aln, tree, model, gc):
     return flat_lf
 
 def ml(doc, model='NG', gc=None, **kw):
-    aln = LoadSeqs(data=doc['aln'].encode('utf-8'))
+    aln = LoadSeqs(data=doc['aln'].encode('utf-8'), moltype=DNA)
     tree = LoadTree(treestring=doc['tree'].encode('utf-8'))
 
     code = get_genetic_code(gc)
+    if model != 'NG':
+        # Trim terminal stop codons
+        aln = aln.withoutTerminalStopCodons(code)
+        aln = aln.filtered(lambda x: set(''.join(x))<=set(DNA), motif_length=3)
+
     flat_lf, time = _fit(aln, tree, model, code)
     return {'lf' : flat_lf, 'time' : time, 'model' : model, 'gc' : code.Name}
 
