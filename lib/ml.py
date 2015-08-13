@@ -28,7 +28,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.5-dev'
+__version__ = '0.0.6-dev'
 
 class GeneralCalcQ(object):
     def calcQ(self, word_probs, mprobs_matrix, *params):
@@ -228,6 +228,8 @@ def _fit_init(aln, tree, model, gc, **kw):
         for param in lf.getParamNames():
             if '/' in param:
                 lf.setParamRule(param, **kw)
+    if model == 'CNFGTR': # set the omegas to be independent
+        lf.setParamRule('omega', is_independent=True)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
     return lf
 
@@ -309,9 +311,6 @@ def _populate_parameters(lf_to, lf_from, **kw):
                 kwargs = dict(is_independent=False, init=params[param])
                 kwargs.update(kw)
                 lf_to.setParamRule(param, **kwargs)
-            elif param == 'omega': # for reversible models, make omega common
-                lf_to.setParamRule(param, is_independent=False)
-
 
 def get_genetic_code(code_name):
     if code_name is None:
