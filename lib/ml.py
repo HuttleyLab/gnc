@@ -28,7 +28,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.6-dev'
+__version__ = '0.0.7-dev'
 
 class GeneralCalcQ(object):
     def calcQ(self, word_probs, mprobs_matrix, *params):
@@ -128,14 +128,14 @@ class NG(GeneralCalcQ, Nucleotide):
                 name = 'NG',
                 **kw)
 
-class Y98G(GeneralCalcQ, Codon):
+class GNC(GeneralCalcQ, Codon):
     def __init__(self, **kw):
-        super(Y98G, self).__init__(
+        super(GNC, self).__init__(
                 motif_probs = None,
                 do_scaling = True,
                 model_gaps = False,
                 recode_gaps = True,
-                name = 'Y98G',
+                name = 'GNC',
                 predicates = _general_preds + [_omega],
                 mprob_model = 'tuple',
                 **kw)
@@ -218,7 +218,7 @@ class MonkeyPatchLikelihoodFunction(AlignmentLikelihoodFunction):
 def _fit_init(aln, tree, model, gc, **kw):
     if model == 'NG':
         sm = GTR(optimise_motif_probs=True)
-    if model in ('NFG', 'MG94G', 'MG94GTR', 'Y98G', 'Y98GTR'):
+    if model in ('NFG', 'MG94G', 'MG94GTR', 'GNC', 'Y98GTR'):
         sm = MG94GTR(optimise_motif_probs=True, gc=gc)
     elif model == 'CNFGTR': # CNFGTR nests no models here
         sm = CNFGTR(optimise_motif_probs=True, gc=gc)
@@ -268,7 +268,7 @@ def _upsample_mprobs(mprobs, tuples):
 
 def _populate_parameters(lf_to, lf_from, **kw):
     mprobs = lf_from['mprobs']
-    if lf_to.model.name.startswith('Y98G') and lf_from['name'] == 'MG94GTR':
+    if lf_to.model.name in ['GNC', 'Y98GTR'] and lf_from['name'] == 'MG94GTR':
         lf_to.setMotifProbs(_upsample_mprobs(mprobs, lf_to._motifs))
     else:
         lf_to.setMotifProbs(mprobs)
@@ -337,7 +337,7 @@ def _fit(aln, tree, model, gc):
         return flat_lf
     last_lf = nest.deflate_likelihood_function(last_lf, save_jsd=False)
 
-    if model in ('NG', 'NFG', 'MG94G', 'Y98G', 'Y98GTR'):
+    if model in ('NG', 'NFG', 'MG94G', 'GNC', 'Y98GTR'):
         kwargs  = dict(optimise_motif_probs=True)
         if model != 'NG':
             kwargs['gc'] = gc
@@ -367,7 +367,7 @@ def ml(doc, model='NG', gc=None, **kw):
 
 def ml_bootstraps(empirical, num_bootstraps=100, use_mpi=True):
     assert empirical['model'] in \
-        ('NG', 'NFG', 'MG94G', 'Y98G', 'Y98GTR', 'CNFGTR', 'MG94GTR')
+        ('NG', 'NFG', 'MG94G', 'GNC', 'Y98GTR', 'CNFGTR', 'MG94GTR')
     gc = get_genetic_code(empirical['gc'].encode('utf-8'))
     model = lambda **kw: eval(empirical['model'])(gc=gc, **kw)
     elf = nest.inflate_likelihood_function(empirical['lf'], model)

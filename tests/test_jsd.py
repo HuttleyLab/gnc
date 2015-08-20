@@ -1,15 +1,17 @@
 from __future__ import division
 
-from numpy.testing import assert_almost_equal, assert_array_almost_equal
-from numpy import log, array
 from itertools import product
 import sys
+import os
+from gzip import GzipFile
 
-from cogent import LoadTree, DNA
+from cogent import LoadTree, DNA, Alignment
 from cogent.evolve.models import GTR
+from numpy.testing import assert_almost_equal, assert_array_almost_equal
+from numpy import log, array
 
 import lib
-from data import get_aln
+from data import get_data_dir
 import jsd
 
 __author__ = 'Ben Kaehler'
@@ -30,7 +32,9 @@ def test_shannon():
 
 def test_distribution():
     """distribution should return empirical distribution for DNA sequence"""
-    al = get_aln('General', 1031).takeSeqs(('Mouse',))
+    with GzipFile(os.path.join(get_data_dir(), 'General_1031.fasta.gz')) as ff:
+        data = ff.read()
+    al = Alignment(data=data).takeSeqs(('Mouse',))
     distribution = jsd.distribution(al.getSeq('Mouse'))
     st = LoadTree(tip_names=('Mouse',))
     sm = GTR()

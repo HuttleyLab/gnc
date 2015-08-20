@@ -20,11 +20,11 @@ __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
 __version__ = '0.0.1-dev'
 
-def test_Y98G():
-    with open(os.path.join(get_data_dir(), 'Y98G.json')) as infile:
+def test_GNC():
+    with open(os.path.join(get_data_dir(), 'GNC.json')) as infile:
         flat_lf = json.load(infile)
 
-    lf = inflate_likelihood_function(flat_lf, ml.Y98G)
+    lf = inflate_likelihood_function(flat_lf, ml.GNC)
     aln = consume.get_aln(os.path.join(get_data_dir(),
         'ENSG00000100393.fasta.gz'), codon_position=-1)
     lf.setAlignment(aln)

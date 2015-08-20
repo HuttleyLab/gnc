@@ -1,0 +1,56 @@
+\documentclass[a4paper,oneside,12pt]{article}
+\include{definitions}
+\begin{document}
+\title{Some Notes on $\omega$}
+\author{Ben Kaehler}
+%\date{26 March 2012}
+\maketitle
+\subsection*{$\omega$ is not $d_\text{N}/d_\text{S}$}
+If we define the instantaneous transition rates of a codon substitution
+process as
+\begin{align*}
+q_{i,j} = \begin{cases} 0, &\text{codons differ at more than one position},\\
+r_{i,j}, &\text{one synonymous difference between codons},\\
+\omega r_{i,j}, &\text{one non-synonymous difference between codons},\end{cases}
+\end{align*}
+where $r_{i,j}$ is some representation of an evolutionarily neutral
+process and $\omega$ summarises the influence of selective pressure,
+then $\omega$ is not the ratio of non-synonymous to synonymous
+substitutions. Note that $r_{i,j}$ is allowed to vary by transition in
+this formulation but is usually further constrained to enforce, for
+instance, time-reversibility of the process.
+
+Define two new transition matrices:
+\begin{align*}
+q_{i,j}^\text{S} &= \begin{cases}
+r_{i,j}, &\text{one synonymous difference between codons},\\
+0, &\text{otherwise},\end{cases} \\
+\text{and} \\
+q_{i,j}^\text{N} &= \begin{cases}
+r_{i,j}, &\text{one non-synonymous difference between codons},\\
+0, &\text{otherwise},\end{cases}
+\end{align*}
+so that $Q = \omega Q^\text{N} + Q^\text{S}$, where $Q$, $Q^\text{N}$, and $Q^\text{S}$ are the matrices comprised of $q_{i,j}$, $q_{i,j}^\text{N}$, and $q_{i,j}^\text{S}$, respectively. Given an initial codon probability row-vector $\pi_0$, the expected number of substitutions up to time $t$ is
+\begin{align*}
+\mathrm{ENS} &= -\pi_0\int_0^t \re^{Qt} \rd t\diag Q \\
+&= -\omega\pi_0\int_0^t \re^{Qt} \rd t\diag Q_\text{N} -\pi_0\int_0^t \re^{Qt} \rd t\diag Q_\text{S} \\
+&=\mathrm{ENNS} + \mathrm{ENSS},
+\end{align*}
+where $\mathrm{ENNS}$ is the expected number of non-synonymous substitutions and $\mathrm{ENSS}$ is the expected number of synonymous substitutions. Now introduce the $\mathrm{ENNS}_1$ as the expected number of non-synonymous substitutions under neutral evolution ($\omega=1$) via
+\begin{align*}
+\mathrm{ENNS} = \omega\mathrm{ENNS}_1.
+\end{align*}
+
+For clarity write
+\begin{align*}
+\omega = \frac{\mathrm{ENS}-\mathrm{ENSS}}{\mathrm{ENNS}_1} = \frac{\mathrm{ENNS}}{\mathrm{ENNS}_1}.
+\end{align*}
+It is clear that, in general, $\omega$ is not the ratio of non-synonymous to synonymous substitutions. $\omega$ would be better described as the ratio of non-synonymous substitutions to non-synonymous substitutions under neutral evolution.
+
+\subsection*{Combining $\omega$ estimates across branches}
+Armed with this definition we are able to extend the definition of $\omega$ across branches of a phylogeny that are attributed with different models of codon evolution. Given two edges, $A$ and $B$, say that we know $\omega_i$, $\mathrm{ENNS}_i$, and $\mathrm{ENNS}_{1i}$ for $i\in\{A,B\}$. It is then natural to estimate $\omega$ across the two edges as
+\begin{align*}
+\omega_{A,B} = \frac{\mathrm{ENNS}_A+\mathrm{ENNS}_B}{\mathrm{ENNS}_{1A}+\mathrm{ENNS}_{1B}},
+\end{align*}
+thereby maintaining the definition of $\omega$ as the ratio of non-synonymous substitutions to non-synonymous substitutions under neutral evolution.
+\end{document}

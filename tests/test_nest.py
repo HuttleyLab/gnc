@@ -6,15 +6,16 @@ from numpy import array, sqrt, allclose
 import sys
 import os
 import json
+from gzip import GzipFile
 
 from cogent.util.misc import ConstraintError
 from cogent.evolve.substitution_model import General, GeneralStationary
 from cogent.evolve.models import GTR
-from cogent import LoadSeqs, DNA
+from cogent import LoadSeqs, DNA, Alignment
 
 import lib
 import nest
-from data import get_aln, get_data_dir
+from data import get_data_dir
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2014, Ben Kaehler'
@@ -24,6 +25,13 @@ __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Production'
 __version__ = '0.0.23-dev'
+
+def get_aln(model, aln_len):
+    filename = '_'.join((model, str(aln_len))) + '.fasta.gz'
+    data = ''
+    with GzipFile(os.path.join(get_data_dir(), filename)) as fastafile:
+        data = fastafile.read()
+    return Alignment(data=data)
 
 def test_expected_no_subs():
     """expected_no_subs should return -int_0^t p0 exp(Qt) dt diag(Q)"""

@@ -1,11 +1,13 @@
+import sys
+import os
+from gzip import GzipFile
+
+from cogent import LoadTree, DNA, Alignment
 from numpy.testing import assert_array_almost_equal, assert_almost_equal
 import numpy as np
-import sys
-
-from cogent import LoadTree, DNA
 
 import lib
-from data import get_aln
+from data import get_data_dir
 from general_ben import GeneralBen
 from nest import (inflate_likelihood_function, populate_parameters,
         get_expected_no_subs, deflate_likelihood_function)
@@ -44,7 +46,9 @@ def test_makeContinuousPsubDefn():
 
 def test_constrain_lengths():
     lf_gen = inflate_likelihood_function(_General)
-    aln = get_aln('General', _General['aln_length'])
+    with GzipFile(os.path.join(get_data_dir(), 'General_1031.fasta.gz')) as ff:
+        data = ff.read()
+    aln = Alignment(data=data)
 
     model = GeneralBen(DNA.Alphabet, recode_gaps=True, model_gaps=False,
             optimise_motif_probs=True)

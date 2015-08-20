@@ -1,0 +1,143 @@
+\usepackage[a4paper,includehead,includefoot,bindingoffset=2cm,margin=2cm]{geometry}
+
+\usepackage[dvipsnames,usenames]{color}
+
+%\usepackage{epsfig,fancybox,multicol,pstcol}
+%\usepackage{subfig}
+
+\usepackage{amsmath,amssymb, amsthm}
+\usepackage{mathrsfs}
+\usepackage{psfrag}
+\usepackage{graphicx}
+\usepackage{scalefnt}
+\usepackage{enumerate}
+\usepackage[round]{natbib}
+%\usepackage{hyphenat}
+\usepackage{helvet}
+\usepackage{ulem}
+\usepackage{pdflscape}
+\usepackage{algorithmic}
+\usepackage[section]{algorithm}
+\usepackage[doublespacing]{setspace}
+
+\bibpunct{(}{)}{;}{a}{}{,}
+
+\numberwithin{equation}{section}
+
+%\parindent = 0 cm
+%\parskip = 12 pt
+%\columnwidth = 23 pc
+%\addtolength{\oddsidemargin}{-.5in}
+%\addtolength{\evensidemargin}{-.5in}
+%\addtolength{\textwidth}{1in}
+
+%\addtolength{\topmargin}{-.5in}
+%\addtolength{\textheight}{1in}
+
+%%
+% Various useful definitions
+%%
+\def\var{\mathop{\rm var}\nolimits}    %variance
+\def\cov{\mathop{\rm cov}\nolimits}    %covariance
+\def\corr{\mathop{\rm corr}\nolimits}  %correlation
+%
+\newcommand{\rd}{\mathrm{d}} %differential d
+\DeclareMathOperator\sd{d\!} %differential d preceeded by a thin space, when needed
+\newcommand{\ri}{\mathrm{i}} %imaginary i
+\newcommand{\re}{\mathrm{e}} %exponential e
+\DeclareMathOperator\sP{P}   %probability, treated as an operator
+\newcommand{\rP}{\mathrm{P}} %probability, when spacing isn't a worry
+\DeclareMathOperator\sE{E}   %expectation, treated as an operator
+\newcommand{\rE}{\mathrm{E}} %expectation, when spacing isn't a worry
+\DeclareMathOperator\BigO{O} %Big-0
+\DeclareMathOperator\littleo{o} %little-o
+\DeclareMathOperator\diag{diag}
+%
+\newcommand{\trans}{^\top}   %matrix transpose
+%
+\newcommand{\cvgpr}{\xrightarrow{\text{\upshape\tiny P}}}   %convergence in probability
+\newcommand{\cvgas}{\xrightarrow{\text{\upshape\tiny a.s.}}}   %convergence almost surely
+\newcommand{\cvgwk}{\xrightarrow{\text{\upshape\tiny W}}}   %weak convergence
+\newcommand{\cvgdist}{\xrightarrow{\text{\upshape\tiny D}}} %convergence in distribution
+\newcommand{\eqdist}{\stackrel{\text{\upshape\tiny D}}{=}}  %equality in distribution
+\newcommand{\cvgs}{\stackrel{\text{\upshape\tiny S}}{\implies}}
+\newcommand{\cvgmz}{\stackrel{\text{\upshape\tiny MZ}}{\implies}}
+
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\expint}{E_1}
+\DeclareMathOperator{\Norm}{N}
+\DeclareMathOperator{\order}{O}
+\DeclareMathOperator{\ind}{\mathbf{1}}
+\DeclareMathOperator{\besselK}{K}
+\newcommand{\reals}{\mathbb{R}}
+\newcommand{\plus}{{\mathord{+}}}
+\newcommand{\minus}{{\mathord{-}}}
+\newcommand{\naturalnumbers}{\mathbb{N}}
+\newcommand{\integers}{\mathbb{Z}}
+\newcommand{\esssup}{\mathop{\rm ess\,sup}}
+\newcommand{\argmin}{\mathop{\rm arg\,min}}
+\newcommand{\argmax}{\mathop{\rm arg\,max}}
+
+\def\combin#1#2{\left(\begin{array}{c}\!\!{#1}\!\!\\\!\!{#2}\!\!\end{array}\right)}
+
+\makeatletter
+\def\imod#1{\allowbreak\mkern10mu({\operator@font mod}\,\,#1)}
+\makeatother
+
+\newtheorem{thm}{Theorem}[section]
+%\newtheorem{cor}[thm]{Corollary}
+%\newtheorem{lem}[thm]{Lemma}
+%\newtheorem{prop}[thm]{Proposition}
+%\newtheorem{conj}[thm]{Conjecture}
+%\newtheorem{remark}[thm]{Remark}
+\newtheorem{lem}{Lemma}[section]
+\newtheorem{remark}{Remark}[section]
+
+%\newenvironment{remark}[1][Remark]{\begin{trivlist}
+%\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+\newcounter{enumtracker}
+\newcounter{enumtrackerone}
+
+% Centré, avec un signe devant le numéro de appendix
+\makeatletter
+\def\appendix{\renewcommand{\thesection}{\thechapter.\Alph{section}}
+	\@ifstar\unnumberedappendix\numberedappendix}
+\def\numberedappendix{\@ifnextchar[%]
+  \numberedappendixwithtwoarguments\numberedappendixwithoneargument}
+\def\unnumberedappendix{\@ifnextchar[%]
+  \unnumberedappendixwithtwoarguments\unnumberedappendixwithoneargument}
+\def\numberedappendixwithoneargument#1{\numberedappendixwithtwoarguments[#1]{#1}}
+\def\unnumberedappendixwithoneargument#1{\unnumberedappendixwithtwoarguments[#1]{#1}}
+\def\numberedappendixwithtwoarguments[#1]#2{%
+  \ifhmode\par\fi
+  \removelastskip
+  \vskip 2ex\goodbreak
+  \refstepcounter{section}%
+  \begingroup
+  \noindent\leavevmode\Large\bfseries\raggedright 
+  Appendix\ \thesection\quad#2\par
+  \endgroup
+  \vskip 1ex\nobreak
+  \addcontentsline{toc}{section}{%
+    \protect\numberline{\thesection}%
+    #1}%
+  }
+\def\unnumberedappendixwithtwoarguments[#1]#2{%
+  \ifhmode\par\fi
+  \removelastskip
+  \vskip 2ex\goodbreak
+%  \refstepcounter{section}%
+  \begingroup
+  \noindent\leavevmode\Large\bfseries\raggedright 
+%  \S \thesection\ 
+  #2\par
+  \endgroup
+  \vskip 1ex\nobreak
+  \addcontentsline{toc}{section}{%
+%    \protect\numberline{\thesection}%
+    #1}%
+  }
+\makeatother
+
+

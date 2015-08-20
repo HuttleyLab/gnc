@@ -21,7 +21,7 @@ class CalcQd(object):
     def __init__(self, exp, calcExMat, word_probs, mprobs_matrix, *params):
         self.mprobs_matrix = mprobs_matrix
         self.R = calcExMat(word_probs, *params)
-        self.R *= mprobs_matrix
+        self.R *= mprobs_matrix # EEE delete this line
         row_totals = self.R.sum(axis=1)
         self.R -= np.diag(row_totals)
         self.guess_alpha = 1. / (word_probs * row_totals).sum()
