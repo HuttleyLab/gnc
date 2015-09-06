@@ -14,7 +14,7 @@ from cogent.evolve.substitution_model import Nucleotide, Codon
 from cogent.maths.stats import chisqprob
 from cogent.evolve.parameter_controller import AlignmentLikelihoodFunction
 from cogent.util.dict_array import DictArrayTemplate
-from cogent.core.genetic_code import GeneticCodes, DEFAULT
+from cogent.core.genetic_code import GeneticCodes, GeneticCode, DEFAULT
 
 from timedec import timed
 import masterslave
@@ -322,7 +322,10 @@ def get_genetic_code(code_name):
                 code = gc
 
         if code is None:
-            raise RuntimeError('Error selecting genetic code ' + code_name)
+            try:
+                code = GeneticCode(code_name, Name=code_name)
+            except:
+                raise RuntimeError('Error selecting genetic code ' + code_name)
 
     return code
 
