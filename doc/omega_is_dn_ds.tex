@@ -1,19 +1,19 @@
 \documentclass[a4paper,oneside,12pt]{article}
 \include{definitions}
 \begin{document}
-\title{$\omega$ is $d_\text{N}/d_\text{S}$}
+\title{$\omega$ is $K_a/K_s$}
 \author{Ben Kaehler}
 %\date{26 March 2012}
 \maketitle
-We extend the definition of $\omega$ to non-stationary Markov models, following the spirit of \citet*[pp.~58-59]{yang2006computational}, which is based on \citet*{goldman1994codon}. The concept translates in a straightforward fashion, but some care is required to show how it is affected by marginal codon probabilities that change through time.
+We show that the definition of $K_a/K_s$ used in \citet*{goldman1994codon} transfers unscathed to the context of non-stationary Markov models. Further, it is equivalent to the parameter $\omega$ in the following standard definition \citep*[see, for example,][p.~59]{yang2006computational}
 
 Define the instantaneous transition rates of a codon substitution process as
 \begin{align*}
 q_{ij} = \begin{cases} 0, &\text{codons differ at more than one position},\\
 r_{ij}, &\text{one synonymous difference between codons},\\
-\eta r_{ij}, &\text{one non-synonymous difference between codons},\end{cases}
+\omega r_{ij}, &\text{one non-synonymous difference between codons},\end{cases}
 \end{align*}
-where $r_{ij}$ is some representation of an evolutionarily neutral process and $\eta$ summarises the influence of selective pressure. Note that $r_{ij}$ is allowed to vary by transition in this formulation but has traditionally been further constrained to enforce, for instance, time-reversibility of the process. We denote the marginal codon probability row vector $\pi(t)$ for time $t>0$.
+where $r_{ij}$ is some representation of an evolutionarily neutral process and $\omega$ summarises the influence of selective pressure. Note that $r_{ij}$ is allowed to vary by transition in this formulation but has traditionally been further constrained to enforce, for instance, time-reversibility of the process. We denote the marginal codon probability row vector $\pi(t)$ for time $t>0$.
 
 Define two new transition matrices:
 \begin{align*}
@@ -25,21 +25,17 @@ q_{ij}^\text{N} &= \begin{cases}
 r_{ij}, &\text{one non-synonymous difference between codons},\\
 0, &\text{otherwise},\end{cases}
 \end{align*}
-so that $Q = \eta Q^\text{N} + Q^\text{S}$, where $Q$, $Q^\text{N}$, and $Q^\text{S}$ are the matrices comprised of $q_{ij}$, $q_{ij}^\text{N}$, and $q_{ij}^\text{S}$, respectively, for their off-diagonal elements. Diagonal elements are calculated in the usual way for Markov generators.
+so that $Q = \omega Q^\text{N} + Q^\text{S}$, where $Q$, $Q^\text{N}$, and $Q^\text{S}$ are the matrices comprised of $q_{ij}$, $q_{ij}^\text{N}$, and $q_{ij}^\text{S}$, respectively, for their off-diagonal elements. Diagonal elements are calculated in the usual way for Markov generators.
 
-Define $S_d(t)$ and $N_d(t)$ to be the expected number of synonymous and non-synonymous substitutions per codon over a small time interval $[t,t+dt)$. Without the subscripts, $S(t)$ and $N(t)$ are the expected number of synonymous and non-synonymous nucleotide sites over the same interval. This curious turn of phrase is taken to be the expected number of synonymous and non-synonymous substitutions over that time interval under the assumption of neutral evolution, meaning that $\eta=1$, per codon, multiplied by three. It can be shown that 
+Following \citet{goldman1994codon}, we define $\rho_s$ and $\rho_a$ to be the rates of synonymous and non-synonymous substitution per codon. They can be shown to be
 \begin{align*}
-S_d(t) &= -\pi(t)\diag Q^\text{S}dt + \littleo(dt),&S(t) &= -3\pi(t)\diag Q^\text{S}dt + \littleo(dt),\\
-N_d(t) &= -\eta\pi(t)\diag Q^\text{N}dt + \littleo(dt),\quad\text{and}\quad &N(t) &= -3\pi(t)\diag Q^\text{N}dt + \littleo(dt).
+		\rho_s = -\pi(t)\diag Q^\text{S} \quad\text{and}\quad \rho_a = -\omega\pi(t)\diag Q^\text{N}.
 \end{align*}
-
-Next define the number of synonymous substitutions per synonymous site, $d_\text{S}(t)=S_d(t)/S(t)$, and the number of non-synonymous substitutions per non-synonymous site, $d_\text{N}(t)=N_d(t)/N(t)$. These become $d_\text{S}(t)=1/3+\littleo(1)$ and $d_\text{N}(t)=\eta/3+\littleo(1)$.
-
-Finally we set
+Further, we define $\rho_s^1$ and $\rho_a^1$ as the potentials of of synonymous and non-synonymous substitutions when no selective constraints exist at the amino acid level, that is $\rho_s^1 = -\pi(t)\diag Q^\text{S}$ and $\rho_a^1 = -\pi(t)\diag Q^\text{N}$. These parameters correspond to $\rho_s^\infty$ and $\rho_a^\infty$ in \citet{goldman1994codon}. Likewise, $3\rho_s^1$ and $3\rho_a^1$ represent the numbers of synonymous and non-synonymous nucleotide sites per codon. So, the numbers of synonymous substitutions per synonymous site and non-synonymous substitutions per non-synonymous site are $K_s = \rho_s/3\rho_s^1 = 1/3$ and $K_a=\rho_a/3\rho_a^1 = \omega/3$. It is therefore clear that
 \begin{align*}
-\omega = \lim_{dt\rightarrow0}\frac{d_\text{N}(t)}{d_\text{S}(t)} = \eta.
+		\omega = \frac{K_a}{K_s},
 \end{align*}
-The limiting argument is required to simplify expressions for $S_d(t)$, $S(t)$, $N_d(t)$, and $N(t)$ which are necessarily more complicated in a non-stationary setting. This argument is not required for time-reversible models as in that case $\pi(t)=\pi(0)$, that is the process is assumed to be stationary. The present definition is compatible with the definition of $\omega$ in \citet{yang2006computational} for the same reason, and shows that $\omega$ can be considered as a proxy for selective pressure in a wider context, provided that it is taken as an instantaneous rate. So $\omega$ can be compared between models and has the meanings that have previously been attributed to it for the cases $\omega<1$, $\omega=1$, and $\omega>1$.
+which shows that the usual definition and understanding of $\omega$ is sufficient in the context of non-stationary Markov models.
 
 \bibliographystyle{chicagoa}
 \bibliography{papers}
