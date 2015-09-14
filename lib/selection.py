@@ -9,7 +9,7 @@ from nest import inflate_likelihood_function, get_edge_names, get_pi_for_edge
         
 from cogent.evolve.models import CNFGTR
 
-from ml import Y98G, Y98GTR, get_genetic_code
+from ml import GNC, Y98GTR, get_genetic_code
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2015, Ben Kaehler'
@@ -18,7 +18,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.1-dev'
+__version__ = '0.0.2-dev'
 
 def mod_diag(mask, Q):
     return -(mask * (1 - eye(Q.shape[0])) * Q).sum(1)
@@ -54,7 +54,7 @@ def get_expected_no_subs(lf, code):
     return ens
 
 def split_ens(doc):
-    assert doc['model'] in ('Y98G', 'Y98GTR', 'CNFGTR')
+    assert doc['model'] in ('GNC', 'Y98GTR', 'CNFGTR')
     gc = get_genetic_code(doc['gc'].encode('utf-8'))
     model = lambda **kw: eval(doc['model'])(gc=gc, **kw)
     lf = inflate_likelihood_function(doc['lf'], model)
