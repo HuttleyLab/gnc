@@ -5,11 +5,13 @@ import os
 from itertools import product
 
 from numpy import array, isnan, log, empty, diag, isinf, logical_not,\
-        real_if_close, eye, allclose
+        real_if_close, eye, allclose, sign, ones
 from numpy.linalg import slogdet, inv, eig
 from numpy.random import standard_normal
 from numpy.testing import assert_allclose
 from scipy.optimize import nnls
+from cvxopt import matrix, solvers
+solvers.options['show_progress'] = False
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2015, Ben Kaehler'
@@ -84,7 +86,10 @@ def DLCesque_permutation(P):
             preference = col.argmax()
             colmax = col[preference]
             preference = not_done_rows[preference]
-            weight = colmax - col[col < colmax].max()
+            if len(col[col < colmax]) > 0.:
+                weight = colmax - col[col < colmax].max()
+            else:
+                weight = 0.
             candidates[preference].append((weight, i))
         
         for row, candidate in enumerate(candidates):
@@ -105,6 +110,49 @@ def pairwise_P(J, a, b, c):
     Jab = pairwise_J(J, a, b, c)
     return diag(1./bafz(Jab.sum(1))).dot(Jab)
 
+def is_stochastic(P):
+    return (P >= 0.).all() and allclose(P.sum(1), 1.)
+
+def _calcQq(Ps):
+    Ps = array(Ps)
+    m = Ps.shape[2]**Ps.shape[0]
+    n = Ps.shape[1]
+    A = empty((m,n))
+    b = empty(m)
+    dx = tuple(range(Ps.shape[0]))
+    for i, ix in enumerate(product(*[range(Ps.shape[2])]*Ps.shape[0])):
+        A[i] = Ps[dx,:,ix].prod(0)
+        b[i] = J[ix]
+    Q = A.T.dot(A)
+    q = -b.T.dot(A)
+    return Q, q
+
+def best_pi(J, Ps):
+    def _calcQq(Ps):
+        Ps = array(Ps)
+        m = Ps.shape[2]**Ps.shape[0]
+        n = Ps.shape[1]
+        A = empty((m,n))
+        b = empty(m)
+        dx = tuple(range(Ps.shape[0]))
+        for i, ix in enumerate(product(*[range(Ps.shape[2])]*Ps.shape[0])):
+            A[i] = Ps[dx,:,ix].prod(0)
+            b[i] = J[ix]
+        Q = A.T.dot(A)
+        q = -b.T.dot(A)
+        return Q, q
+
+    Q, q = map(matrix, _calcQq(Ps))
+    n = Ps[0].shape[0]
+    G = matrix(-eye(n))
+    h = matrix(array([-1e-9]*n))
+    A = matrix(ones(n).reshape((1,n)))
+    b = matrix([1.])
+    initvals = {'x' : matrix([1./n]*n)}
+    sol = solvers.qp(Q, q, G, h, A, b, initvals=initvals)
+    assert sol['status'] == 'optimal'
+    return array(sol['x'].T)[0]
+
 def triad(J):
     assert len(J.shape) == 3, 'triad only works for three taxa'
     assert_allclose(J.shape[0], J.shape[1:], err_msg='sets of states differ')
@@ -113,7 +161,7 @@ def triad(J):
     J = fix_J(J)
 
     # figure out the paralinear branch lengths
-    a, c, b = fit_paralinear(J).argsort()
+    b, a, c = fit_paralinear(J).argsort()
 
     # use spectral method to get Par for shortest branch to minimise error
     U = standard_normal(J.shape[0])
@@ -122,6 +170,37 @@ def triad(J):
     Jab = pairwise_J(J, a, b, c)
     pia = bafz(Jab.sum(1))
     Pab = diag(1/pia).dot(Jab)
+
+    invPmb = eig(inv(Pab).dot(PabU))[1]
+    Pmb = inv(invPmb).real
+    Pmb = diag(sign(Pmb.sum(1))).dot(Pmb)
+    Pmb[Pmb < 1e-9] = 1e-9
+    Pmb = diag(1./bafz(Pmb.sum(1))).dot(Pmb)
+    invPmb = inv(Pmb)
+    assert is_stochastic(Pmb), 'Pmb not stochastic'
+
+    Jma = (Jab.dot(invPmb)).T
+    Jma[Jma < 1e-9] = 1e-9
+    Jma /= Jma.sum()
+    pim = bafz(Jma.sum(1))
+    Pma = diag(1./pim).dot(Jma)
+    assert is_stochastic(Pma), 'Pma not stochastic'
+
+    Jcb = pairwise_J(J, c, b, a)
+    Jmc = (Jcb.dot(invPmb)).T
+    Jmc[Jmc < 1e-9] = 1e-9
+    Jmc /= Jmc.sum()
+    pim = Jmc.sum(1)
+    Pmc = diag(1./pim).dot(Jmc)
+    assert is_stochastic(Pmc), 'Pmc not stochastic'
+
+    # now reconstruct the rows
+    R = DLCesque_permutation(Pma)
+    Ps = [R.dot(P) for P in array((Pma, Pmb, Pmc))[array([a, b, c]).argsort()]]
+    pim = best_pi(J, Ps)
+
+    return pim, Ps
+
     X = eig(PabU.dot(inv(Pab)))[1].real # making it real is a bit dodgey
     eta = inv(X).sum(1) # some mossel and roch magic here
     Par = X.dot(diag(eta))
