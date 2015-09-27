@@ -44,10 +44,6 @@ def test_triad():
     for n in (4, 61):
         J, pi, Ps = gen_J(n)
         fpi, fPs = spectrad.triad(J)
-        for P in Ps:
-            print P
-        for P in fPs:
-            print P
         assert_allclose(fpi, pi)
         for P, fP in zip(Ps, fPs):
             assert_allclose(P, fP)
