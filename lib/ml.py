@@ -28,7 +28,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.7-dev'
+__version__ = '0.0.8-dev'
 
 class GeneralCalcQ(object):
     def calcQ(self, word_probs, mprobs_matrix, *params):
@@ -224,6 +224,7 @@ def _fit_init(aln, tree, model, gc, **kw):
         sm = CNFGTR(optimise_motif_probs=True, gc=gc)
     lf = sm.makeLikelihoodFunction(tree)
     lf.setAlignment(aln)
+    lf.setParamRule('length', is_independent=True, upper=50.)
     with lf.updatesPostponed():
         for param in lf.getParamNames():
             if '/' in param:
@@ -276,7 +277,7 @@ def _populate_parameters(lf_to, lf_from, **kw):
     edges = set([e.Name for e in lf_to.tree.getEdgeVector(include_root=False)])
     for edge in edges:
         init = lf_from['params']['length'][edge]
-        lf_to.setParamRule('length', edge=edge, init=init)
+        lf_to.setParamRule('length', edge=edge, init=init, upper=50.)
         params = {}
         for param in lf_from['params']:
             value = lf_from['params'][param][edge]
