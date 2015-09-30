@@ -224,13 +224,13 @@ def _fit_init(aln, tree, model, gc, **kw):
         sm = CNFGTR(optimise_motif_probs=True, gc=gc)
     lf = sm.makeLikelihoodFunction(tree)
     lf.setAlignment(aln)
-    lf.setParamRule('length', is_independent=True, upper=50.)
     with lf.updatesPostponed():
         for param in lf.getParamNames():
             if '/' in param:
                 lf.setParamRule(param, **kw)
     if model == 'CNFGTR': # set the omegas to be independent
         lf.setParamRule('omega', is_independent=True)
+        lf.setParamRule('length', is_independent=True, upper=50.)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
     return lf
 
