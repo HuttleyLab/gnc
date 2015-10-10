@@ -1,27 +1,34 @@
 import numpy as np
 from scipy_optimize import newton
 
-from cogent.evolve.substitution_model import General
+from cogent import DNA, LoadSeqs, LoadTree
+from cogent.evolve.substitution_model import Nucleotide, Codon
+from cogent.evolve.models import GTR, CNFGTR, _omega, _gtr_preds
 from cogent.evolve.substitution_calculation import (
         CalcDefn, NonParamDefn, ExpDefn)
 from cogent.maths.matrix_exponentiation import EigenExponentiator
 from cogent.maths.matrix_exponential_integration import (
         VanLoanIntegratingExponentiator, VonBingIntegratingExponentiator)
 
+from timedec import timed
+from ml import _general_preds, get_genetic_code, _is_hard_up, MG94GTR, \
+        _upsample_mprobs, _populate_parameters, Y98GTR
+import nest
+assert nest.__version__ == '0.0.31-dev'
+
 __author__ = 'Ben Kaehler'
-__copyright__ = 'Copyright 2014, Ben Kaehler'
+__copyright__ = 'Copyright 2015, Ben Kaehler'
 __credits__ = ['Ben Kaehler']
 __license__ = 'GPL'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Production'
-__version__ = '0.0.3-dev'
+__version__ = '0.0.1-dev'
 
 class CalcQd(object):
     def __init__(self, exp, calcExMat, word_probs, mprobs_matrix, *params):
         self.mprobs_matrix = mprobs_matrix
         self.R = calcExMat(word_probs, *params)
-        self.R *= mprobs_matrix # EEE delete this line
         row_totals = self.R.sum(axis=1)
         self.R -= np.diag(row_totals)
         self.guess_alpha = 1. / (word_probs * row_totals).sum()
@@ -72,16 +79,11 @@ class CalcQd(object):
         return self.Rd(self.alpha * self.distance)
 
 
-class GeneralBen(General):
+class GeneralClocklike(object):
     """A continuous substitution model with one free parameter for each and 
     every possible instantaneous substitution for which branch length equals
     expected number of substitutions along that branch"""
     
-    def __init__(self, *args, **kwargs):
-        if 'name' not in kwargs:
-            kwargs['name'] = 'GeneralBen'
-        super(GeneralBen, self).__init__(*args, **kwargs)
-
     def calcQ(self):
         raise AttributeError("'GeneralBen' object has no attribute 'calcQ'")
 
@@ -100,6 +102,71 @@ class GeneralBen(General):
         P = CalcDefn(lambda cQd, Q: cQd.getP(), name='psubs')(Qd, Q)
         return P
 
+class GNCClock(GeneralClocklike, Codon):
+    def __init__(self, **kw):
+        super(GNCClock, self).__init__(
+                motif_probs = None,
+                do_scaling = True,
+                model_gaps = False,
+                recode_gaps = True,
+                name = 'GNCClock',
+                predicates = _general_preds + [_omega],
+                mprob_model = 'tuple',
+                **kw)
+        self.clocklike = True
 
+def _fit_init(aln, tree, model, gc, ingroup, **kw):
+    if model == 'CNFGTR': # CNFGTR nests no models here
+        sm = CNFGTR(optimise_motif_probs=True, gc=gc)
+    else:
+        sm = MG94GTR(optimise_motif_probs=True, gc=gc)
+    lf = sm.makeLikelihoodFunction(tree)
+    lf.setAlignment(aln)
+    with lf.updatesPostponed():
+        lf.setParamRule('length', edges=ingroup, is_independent=False)
+        for param in lf.getParamNames():
+            if '/' in param:
+                lf.setParamRule(param, **kw)
+    if model == 'CNFGTR':
+        lf.setParamRule('omega', is_independent=True)
+        lf.setParamRule('length', is_independent=False, edges=ingroup, upper=50.)
+    lf.optimise(local=True, show_progress=False, limit_action='raise')
+    return lf
 
+@timed
+def _fit(aln, tree, model, gc, ingroup):
+    sp_kw = dict(upper=20., lower=0.05, is_independent=False)
 
+    last_lf = _fit_init(aln, tree, model, gc, ingroup, **sp_kw)
+    if model in ('CNFGTR', 'MG94GTR'):
+        flat_lf = nest.deflate_likelihood_function(last_lf)
+        flat_lf['hard_up'] = _is_hard_up(last_lf)
+        return flat_lf
+    last_lf = nest.deflate_likelihood_function(last_lf, save_jsd=False)
+
+    if model in ('GNCClock', 'Y98GTR'):
+        kwargs = dict(optimise_motif_probs=True)
+        sm = eval(model)(**kwargs)
+    else:
+        raise NotImplementedError(model + ' not supported')
+    lf = sm.makeLikelihoodFunction(tree)
+    lf.setAlignment(aln)
+    _populate_parameters(lf, last_lf, **sp_kw)
+    lf.setParamRule('length', is_independent=False, edges=ingroup)
+    lf.optimise(local=True, show_progress=False, limit_action='raise')
+    flat_lf = nest.deflate_likelihood_function(lf)
+    flat_lf['hard_up'] = _is_hard_up(lf)
+    return flat_lf
+
+def ml(doc, model='GNCClock', gc=None, outgroup=None, **kw):
+    aln = LoadSeqs(data=doc['aln'].encode('utf-8'), moltype=DNA)
+    tree = LoadTree(treestring=doc['tree'].encode('utf-8'))
+
+    code = get_genetic_code(gc)
+    # Trim terminal stop codons
+    aln = aln.withoutTerminalStopCodons(code)
+    aln = aln.filtered(lambda x: set(''.join(x))<=set(DNA), motif_length=3)
+
+    ingroup = [t for t in aln.Names if t != outgroup]
+    flat_lf, time = _fit(aln, tree, model, code, ingroup=ingroup)
+    return {'lf' : flat_lf, 'time' : time, 'model' : model, 'gc' : code.Name}

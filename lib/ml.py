@@ -19,7 +19,7 @@ from cogent.core.genetic_code import GeneticCodes, GeneticCode, DEFAULT
 from timedec import timed
 import masterslave
 import nest
-assert nest.__version__ == '0.0.30-dev' # a bit hacky but will do for now
+assert nest.__version__ == '0.0.31-dev' # a bit hacky but will do for now
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2015, Ben Kaehler'
@@ -28,7 +28,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.8-dev'
+__version__ = '0.0.9-dev'
 
 class GeneralCalcQ(object):
     def calcQ(self, word_probs, mprobs_matrix, *params):
@@ -269,7 +269,8 @@ def _upsample_mprobs(mprobs, tuples):
 
 def _populate_parameters(lf_to, lf_from, **kw):
     mprobs = lf_from['mprobs']
-    if lf_to.model.name in ['GNC', 'Y98GTR'] and lf_from['name'] == 'MG94GTR':
+    if lf_to.model.name in ['GNC', 'GNCClock', 'Y98GTR'] \
+            and lf_from['name'] == 'MG94GTR':
         lf_to.setMotifProbs(_upsample_mprobs(mprobs, lf_to._motifs))
     else:
         lf_to.setMotifProbs(mprobs)

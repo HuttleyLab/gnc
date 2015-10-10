@@ -18,7 +18,6 @@ from cogent.maths.matrix_exponential_integration import (
         VonBingIntegratingExponentiator, VanLoanIntegratingExponentiator)
 
 import jsd
-from general_ben import GeneralBen
 from toposort import sort
 
 __author__ = 'Ben Kaehler'
@@ -28,7 +27,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.30-dev'
+__version__ = '0.0.31-dev'
 
 def expected_no_subs(p0, Q, t):
     try:
@@ -46,7 +45,7 @@ def get_pi_for_edge(lf, name):
     return lf.getMotifProbsByNode(edges=[parent])[parent].asarray()
 
 def get_expected_no_subs(lf):
-    if not lf.model.with_rate:
+    if not lf.model.with_rate and not hasattr(lf.model, "clocklike"):
         edges = get_edge_names(lf)
         ens = {}
         for edge in edges:
@@ -193,145 +192,6 @@ def deflate_likelihood_function(lf, save_stats=True, save_dependencies=True,
 def get_model_params(lf):
     return (param for param in lf.getParamNames() if '/' in param)
 
-def bh_fit(sa, st, return_lfs=None, global_optimisation=False, **kw):
-    standard_params = {'is_independent': True, 'is_constant': False}
-    optimise_params = {'local': not global_optimisation,
-            'show_progress': False, 'limit_action': 'raise'}
-
-    sm = HKY85()
-    lead_in_lf = sm.makeLikelihoodFunction(st)
-    lead_in_lf.setAlignment(sa)
-    lead_in_lf.optimise(**optimise_params)
-    sm = DiscreteSubstitutionModel(DNA.Alphabet, optimise_motif_probs=True,
-            model_gaps=False, recode_gaps=True,
-            name='DiscreteSubstitutionModel')
-    lf = sm.makeLikelihoodFunction(st)
-    lf.setAlignment(sa)
-    populate_parameters(lf, lead_in_lf, **standard_params)
-    lf.optimise(**optimise_params)
-
-    if return_lfs:
-        return [lf]
-    else:
-        return [deflate_likelihood_function(lf)]
-
-def hetero_fit(sa, st, return_lfs=None, global_optimisation=False, **kw):
-    kw['local'] = not global_optimisation
-    lf = _fit('GTR', sa, st, with_rate=True, **kw)
-    if return_lfs:
-        return [lf]
-    else:
-        return [deflate_likelihood_function(lf)]
-
-def hetero_clock_fit(sa, st, outgroup=None, return_lfs=None,
-        global_optimisation=False, **kw):
-    kw['local'] = not global_optimisation
-
-    lfs = []
-    lf = _fit('GTR', sa, st, with_rate=True, outgroup=outgroup, **kw)
-    lfs.append(lf)
-    
-    lf = _fit('GTR', sa, st, with_rate=True, lf_from=lf, **kw)
-    lfs.append(lf)
-    
-    if return_lfs:
-        return lfs
-    else:
-        return map(deflate_likelihood_function, lfs)
-
-def seq_fit(sa, st, return_lfs=None, global_optimisation=False, **kw):
-    kw['local'] = not global_optimisation
-
-    lfs = []
-    lf = _fit('GTR', sa, st, **kw)
-    lfs.append(lf)
-
-    if not return_lfs or return_lfs in ('General', 'DiscreteSubstitutionModel'):
-        lf = _fit('General', sa, st, lf_from=lf, **kw)
-        lfs.append(lf)
-
-    if not return_lfs or return_lfs == 'DiscreteSubstitutionModel':
-        try:
-            lf = _fit('DiscreteSubstitutionModel', sa, st, lf_from=lf, **kw)
-            lfs.append(lf)
-        except Exception as e:
-            pass # Fail silently; DiscreteSubstitutionModel is a bonus if it works
-
-    if return_lfs:
-        return lfs
-    else:
-        return map(deflate_likelihood_function, lfs)
-
-def _fit(model, sa, st, outgroup=None, param_limit=None, with_rate=False,
-        local=True, lf_from=None, **kw): 
-    assert model not in ('General', 'DiscreteSubstitutionModel',
-        'GeneralStationary') or not with_rate, model + ' plus Gamma not supported'
-    assert not model == 'DiscreteSubstitutionModel' or outgroup is None, \
-            'Clock test not supported for DiscreteSubstitutionModel'
-    assert model in ('General', 'GTR', 'DiscreteSubstitutionModel',
-        'GeneralStationary'), model + ' not supported'
-
-    if model == 'GTR':
-        if with_rate:
-            sm = GTR(optimise_motif_probs=True, with_rate=True, 
-                    distribution='gamma')
-            lf = sm.makeLikelihoodFunction(st, bins=4)
-            lf.setParamRule('bprobs', is_constant=True)
-        else:
-            sm = GTR(optimise_motif_probs=True)
-            lf = sm.makeLikelihoodFunction(st)
-    else:
-        if model == 'General' and outgroup is not None:
-            sm = GeneralBen(DNA.Alphabet, recode_gaps=True, model_gaps=False,
-                    optimise_motif_probs=True)
-        else:
-            sm = eval(model)(DNA.Alphabet, recode_gaps=True, model_gaps=False,
-                optimise_motif_probs=True, name=model)
-        lf = sm.makeLikelihoodFunction(st)
-    lf.setAlignment(sa)
-    if lf_from is not None:
-        populate_parameters(lf, lf_from, is_independent=True,
-                is_constant=False, upper=param_limit, lower=1./param_limit)
-        if model == 'GTR':
-            for param in get_model_params(lf):
-                lf.setParamRule(param, is_independent=False)
-    elif param_limit is not None:
-        for param in get_model_params(lf):
-            dependencies = _get_dependencies_for(param, lf)
-            for scope in dependencies:
-                lf.setParamRule(param, upper=param_limit, lower=1./param_limit,
-                        is_independent=False, **scope)
-    if outgroup is not None:
-        ingroup = [e for e in st.getTipNames() if e != outgroup]
-        lf.setParamRule('length', edges=ingroup, is_independent=False)
-    if with_rate:
-        lf.setParamRule('rate_shape', upper=100)
-    lf.optimise(local=local, show_progress=False, limit_action='raise', **kw)
-    return lf
-
-def clock_fit(sa, st, outgroup=None, return_lfs=None, 
-        global_optimisation=False, **kw):
-    kw['local'] = not global_optimisation
-
-    lfs = []
-    lf = _fit('GTR', sa, st, outgroup=outgroup, **kw)
-    lfs.append(lf)
-
-    lf = _fit('GTR', sa, st, lf_from=lf, **kw)
-    lfs.append(lf)
-
-    if not return_lfs or return_lfs == 'General':
-        lf = _fit('General', sa, st, outgroup=outgroup, lf_from=lfs[0], **kw)
-        lfs.append(lf)
-
-        lf = _fit('General', sa, st, lf_from=lf, **kw)
-        lfs.append(lf)
-
-    if return_lfs:
-        return lfs
-    else:
-        return map(deflate_likelihood_function, lfs)
-
 def _update(data):
     data['with_rate'] = False
     params = data['params']
@@ -344,7 +204,7 @@ def _update(data):
         deps[param] = [{'edges':edges} for edges in deps[param]]
 
 def inflate_likelihood_function(data, model=None):
-    supported_subs_models = ('GeneralStationary', 'General', 'GeneralBen',
+    supported_subs_models = ('GeneralStationary', 'General',
         'DiscreteSubstitutionModel', 'General_with_gaps')
     if not model is None:
         model = model()
@@ -401,64 +261,6 @@ def inflate_likelihood_function(data, model=None):
 
     return lf
 
-def populate_parameters(lf_to, lf_from, **sp_kw):
-    edges = get_edge_names(lf_to)
-    mprobs = lf_from.getMotifProbs()
-    lf_to.setMotifProbs(mprobs)
-
-    if lf_to.model.name == 'DiscreteSubstitutionModel':
-        for edge in edges:
-            init = lf_from.getParamValue('psubs', edge=edge)
-            lf_to.setParamRule('psubs', edge=edge, init=init)
-        return
-
-    if lf_from.model.name == 'General' and lf_to.model.name == 'GeneralBen':
-        lengths = get_expected_no_subs(lf_from)
-    else:
-        lengths = lf_from.getParamValueDict(['edge','bin'])['length']
-    
-    for edge in edges:
-        rate_matrix = lf_from.getRateMatrixForEdge(edge)
-        scale = -np.dot(np.diag(rate_matrix), mprobs)
-        lf_to.setParamRule('length', edge=edge, init=scale*lengths[edge])
-        params_to = {}
-        for param in get_model_params(lf_to):
-            i, j = param.split('/')
-            params_to[param] = rate_matrix[i][j]/mprobs[j]
-        if lf_to.model.name == 'GeneralStationary': # Magic Cell method to find scale
-            scale = mprobs['G']/rate_matrix['A']['G']
-        elif lf_to.model.name.startswith('General'):
-            scale = mprobs['A']/rate_matrix['G']['A']
-        elif lf_to.model.name == 'GTR':
-            scale = mprobs['G']/rate_matrix['T']['G']
-        else:
-            try:
-                from scipy.optimize import minimize_scalar
-            except ImportError:
-                raise RuntimeError('scipy is required if you call ' +
-                        'populate_parameters with a ' + lf_to.model.name)
-            tol = 1.1*RatioParamDefn('dummy').lower
-            def test(scale):
-                with lf_to.updatesPostponed():
-                    for param in params_to:
-                        new_param = max(abs(scale)*params_to[param], tol)
-                        lf_to.setParamRule(param, edge=edge, init=new_param)
-                return np.linalg.norm(
-                        np.array(lf_to.getRateMatrixForEdge(edge))-
-                        np.array(rate_matrix))
-
-            scale = abs(minimize_scalar(test).x)
-
-        with lf_to.updatesPostponed():
-            for param in params_to:
-                lf_to.setParamRule(param, edge=edge,
-                        init=scale*params_to[param], **sp_kw)
-        
-    if hasattr(lf_to.model, 'with_rate') and lf_to.model.with_rate:
-        rate_shape = lf_from.getParamValue('rate_shape')
-        lf_to.setParamRule('rate_shape', init=rate_shape)
-
-    
 def main():
     pass
 
