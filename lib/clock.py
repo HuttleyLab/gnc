@@ -23,7 +23,7 @@ __license__ = 'GPL'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Production'
-__version__ = '0.0.1-dev'
+__version__ = '0.0.2-dev'
 
 class CalcQd(object):
     def __init__(self, exp, calcExMat, word_probs, mprobs_matrix, *params):
@@ -33,13 +33,8 @@ class CalcQd(object):
         self.R -= np.diag(row_totals)
         self.guess_alpha = 1. / (word_probs * row_totals).sum()
         self.Rd = exp(self.R)
-        if isinstance(self.Rd, EigenExponentiator):
-            iexp = VonBingIntegratingExponentiator
-            iexpR = iexp(self.R)
-            self.iRd = lambda t: np.dot(iexpR(t), -np.diag(self.R))
-        else:
-            iexp = VanLoanIntegratingExponentiator
-            self.iRd = iexp(self.R, -np.diag(self.R), exp)
+        iexp = VanLoanIntegratingExponentiator
+        self.iRd = iexp(self.R, -np.diag(self.R), exp)
         self._fprimealpha = None
 
     def _f(self, alpha):
@@ -102,6 +97,18 @@ class GeneralClocklike(object):
         P = CalcDefn(lambda cQd, Q: cQd.getP(), name='psubs')(Qd, Q)
         return P
 
+class NGClock(GeneralClocklike, Nucleotide):
+    def __init__(self, **kw):
+        super(NGClock, self).__init__(
+                predicates = _general_preds,
+                recode_gaps = True,
+                model_gaps = False,
+                do_scaling = True,
+                name = 'NGClock',
+                **kw)
+        self.clocklike = True
+
+
 class GNCClock(GeneralClocklike, Codon):
     def __init__(self, **kw):
         super(GNCClock, self).__init__(
@@ -116,7 +123,9 @@ class GNCClock(GeneralClocklike, Codon):
         self.clocklike = True
 
 def _fit_init(aln, tree, model, gc, ingroup, **kw):
-    if model == 'CNFGTR': # CNFGTR nests no models here
+    if model == 'NGClock':
+        sm = GTR(optimise_motif_probs=True)
+    elif model == 'CNFGTR': # CNFGTR nests no models here
         sm = CNFGTR(optimise_motif_probs=True, gc=gc)
     else:
         sm = MG94GTR(optimise_motif_probs=True, gc=gc)
@@ -144,7 +153,7 @@ def _fit(aln, tree, model, gc, ingroup):
         return flat_lf
     last_lf = nest.deflate_likelihood_function(last_lf, save_jsd=False)
 
-    if model in ('GNCClock', 'Y98GTR'):
+    if model in ('GNCClock', 'Y98GTR', 'NGClock'):
         kwargs = dict(optimise_motif_probs=True)
         sm = eval(model)(**kwargs)
     else:
@@ -163,9 +172,10 @@ def ml(doc, model='GNCClock', gc=None, outgroup=None, **kw):
     tree = LoadTree(treestring=doc['tree'].encode('utf-8'))
 
     code = get_genetic_code(gc)
-    # Trim terminal stop codons
-    aln = aln.withoutTerminalStopCodons(code)
-    aln = aln.filtered(lambda x: set(''.join(x))<=set(DNA), motif_length=3)
+    if model != 'NGClock':
+        # Trim terminal stop codons
+        aln = aln.withoutTerminalStopCodons(code)
+        aln = aln.filtered(lambda x: set(''.join(x))<=set(DNA), motif_length=3)
 
     ingroup = [t for t in aln.Names if t != outgroup]
     flat_lf, time = _fit(aln, tree, model, code, ingroup=ingroup)

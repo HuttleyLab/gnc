@@ -28,7 +28,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.9-dev'
+__version__ = '0.0.10-dev'
 
 class GeneralCalcQ(object):
     def calcQ(self, word_probs, mprobs_matrix, *params):
@@ -344,7 +344,7 @@ def _fit(aln, tree, model, gc):
 
     if model in ('NG', 'NFG', 'MG94G', 'GNC', 'Y98GTR'):
         kwargs  = dict(optimise_motif_probs=True)
-        if model != 'NG':
+        if not model.startswith('NG'):
             kwargs['gc'] = gc
         sm = eval(model)(**kwargs)
     else:
