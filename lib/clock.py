@@ -3,7 +3,7 @@ from scipy_optimize import newton
 
 from cogent import DNA, LoadSeqs, LoadTree
 from cogent.evolve.substitution_model import Nucleotide, Codon
-from cogent.evolve.models import GTR, CNFGTR, _omega, _gtr_preds
+from cogent.evolve.models import GTR, CNFGTR, Y98, _omega, _gtr_preds
 from cogent.evolve.substitution_calculation import (
         CalcDefn, NonParamDefn, ExpDefn)
 from cogent.maths.matrix_exponentiation import EigenExponentiator
@@ -23,7 +23,7 @@ __license__ = 'GPL'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Production'
-__version__ = '0.0.2-dev'
+__version__ = '0.0.3-dev'
 
 class CalcQd(object):
     def __init__(self, exp, calcExMat, word_probs, mprobs_matrix, *params):
@@ -127,6 +127,8 @@ def _fit_init(aln, tree, model, gc, ingroup, **kw):
         sm = GTR(optimise_motif_probs=True)
     elif model == 'CNFGTR': # CNFGTR nests no models here
         sm = CNFGTR(optimise_motif_probs=True, gc=gc)
+    elif model == 'Y98': # No need for a nested fit for Y98
+        sm = Y98(optimise_motif_probs=True, gc=gc)
     else:
         sm = MG94GTR(optimise_motif_probs=True, gc=gc)
     lf = sm.makeLikelihoodFunction(tree)
@@ -136,7 +138,7 @@ def _fit_init(aln, tree, model, gc, ingroup, **kw):
         for param in lf.getParamNames():
             if '/' in param:
                 lf.setParamRule(param, **kw)
-    if model == 'CNFGTR':
+    if model in ('CNFGTR', 'Y98'):
         lf.setParamRule('omega', is_independent=True)
         lf.setParamRule('length', is_independent=False, edges=ingroup, upper=50.)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
@@ -147,7 +149,7 @@ def _fit(aln, tree, model, gc, ingroup):
     sp_kw = dict(upper=20., lower=0.05, is_independent=False)
 
     last_lf = _fit_init(aln, tree, model, gc, ingroup, **sp_kw)
-    if model in ('CNFGTR', 'MG94GTR'):
+    if model in ('CNFGTR', 'MG94GTR', 'Y98'):
         flat_lf = nest.deflate_likelihood_function(last_lf)
         flat_lf['hard_up'] = _is_hard_up(last_lf)
         return flat_lf

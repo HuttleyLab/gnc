@@ -9,7 +9,7 @@ filterwarnings('ignore', 'Model not reversible', UserWarning)
 
 import numpy
 from cogent import DNA, LoadSeqs, LoadTree
-from cogent.evolve.models import GTR, CNFGTR, MotifChange, _omega, _gtr_preds
+from cogent.evolve.models import GTR, CNFGTR, Y98, MotifChange, _omega, _gtr_preds
 from cogent.evolve.substitution_model import Nucleotide, Codon
 from cogent.maths.stats import chisqprob
 from cogent.evolve.parameter_controller import AlignmentLikelihoodFunction
@@ -28,7 +28,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.10-dev'
+__version__ = '0.0.11-dev'
 
 class GeneralCalcQ(object):
     def calcQ(self, word_probs, mprobs_matrix, *params):
@@ -218,17 +218,19 @@ class MonkeyPatchLikelihoodFunction(AlignmentLikelihoodFunction):
 def _fit_init(aln, tree, model, gc, **kw):
     if model == 'NG':
         sm = GTR(optimise_motif_probs=True)
-    if model in ('NFG', 'MG94G', 'MG94GTR', 'GNC', 'Y98GTR'):
+    elif model in ('NFG', 'MG94G', 'MG94GTR', 'GNC', 'Y98GTR'):
         sm = MG94GTR(optimise_motif_probs=True, gc=gc)
     elif model == 'CNFGTR': # CNFGTR nests no models here
         sm = CNFGTR(optimise_motif_probs=True, gc=gc)
+    elif model == 'Y98': # No need for nested fitting for Y98
+        sm = Y98(optimise_motif_probs=True, gc=gc)
     lf = sm.makeLikelihoodFunction(tree)
     lf.setAlignment(aln)
     with lf.updatesPostponed():
         for param in lf.getParamNames():
             if '/' in param:
                 lf.setParamRule(param, **kw)
-    if model == 'CNFGTR': # set the omegas to be independent
+    if model in ('CNFGTR', 'Y98'): # set the omegas to be independent
         lf.setParamRule('omega', is_independent=True)
         lf.setParamRule('length', is_independent=True, upper=50.)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
@@ -336,7 +338,7 @@ def _fit(aln, tree, model, gc):
     sp_kw = dict(upper=20., lower=0.05, is_independent=False) 
 
     last_lf = _fit_init(aln, tree, model, gc, **sp_kw)
-    if model in ('CNFGTR', 'MG94GTR'):
+    if model in ('CNFGTR', 'MG94GTR', 'Y98'):
         flat_lf = nest.deflate_likelihood_function(last_lf)
         flat_lf['hard_up'] = _is_hard_up(last_lf)
         return flat_lf
@@ -372,7 +374,7 @@ def ml(doc, model='NG', gc=None, **kw):
 
 def ml_bootstraps(empirical, num_bootstraps=100, use_mpi=True):
     assert empirical['model'] in \
-        ('NG', 'NFG', 'MG94G', 'GNC', 'Y98GTR', 'CNFGTR', 'MG94GTR')
+        ('NG', 'NFG', 'MG94G', 'GNC', 'Y98GTR', 'CNFGTR', 'MG94GTR', 'Y98')
     gc = get_genetic_code(empirical['gc'].encode('utf-8'))
     model = lambda **kw: eval(empirical['model'])(gc=gc, **kw)
     elf = nest.inflate_likelihood_function(empirical['lf'], model)
