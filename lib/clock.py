@@ -140,7 +140,7 @@ def _fit_init(aln, tree, model, gc, ingroup, **kw):
                 lf.setParamRule(param, **kw)
     if model in ('CNFGTR', 'Y98'):
         lf.setParamRule('omega', is_independent=True)
-        lf.setParamRule('length', is_independent=False, edges=ingroup, upper=50.)
+        lf.setParamRule('length', is_independent=False, edges=ingroup)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
     return lf
 

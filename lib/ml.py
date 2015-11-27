@@ -232,7 +232,7 @@ def _fit_init(aln, tree, model, gc, **kw):
                 lf.setParamRule(param, **kw)
     if model in ('CNFGTR', 'Y98'): # set the omegas to be independent
         lf.setParamRule('omega', is_independent=True)
-        lf.setParamRule('length', is_independent=True, upper=50.)
+        lf.setParamRule('length', is_independent=True)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
     return lf
 
@@ -280,7 +280,7 @@ def _populate_parameters(lf_to, lf_from, **kw):
     edges = set([e.Name for e in lf_to.tree.getEdgeVector(include_root=False)])
     for edge in edges:
         init = lf_from['params']['length'][edge]
-        lf_to.setParamRule('length', edge=edge, init=init, upper=50.)
+        lf_to.setParamRule('length', edge=edge, init=init)
         params = {}
         for param in lf_from['params']:
             value = lf_from['params'][param][edge]
