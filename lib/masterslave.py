@@ -17,7 +17,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.10-dev'
+__version__ = '0.0.11-dev'
 
 _MASTER = 0
 _WORKTAG = 1
@@ -167,64 +167,6 @@ def _slave(function):
             sys.stderr.write('Uncaught exception:\n'+traceback.format_exc())
             _comm.Abort(1)
         _comm.send(result, dest=_MASTER, tag=_WORKTAG)
-
-class Gang(object):
-    def __init__(self, function):
-        self._function = function
-        if _rank != _MASTER:
-            _slave(self._tracker)
-        self.apply = self._umApply if USING_MPI else self._numApply
-
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if _rank == _MASTER:
-            for slave in range(_WORKTAG, _size):
-                _comm.send(None, dest=slave, tag=_DIETAG)
-        return False
-
-    def _master(self, sequence):
-        slave = 0
-        for slave, item in enumerate(sequence, _WORKTAG):
-            _comm.send(item, dest=slave, tag=_WORKTAG)
-            if slave == _size-1:
-                break
-        outstanding = slave
-        
-        status = MPI.Status()
-        for item in sequence:
-            result = _comm.recv(source=MPI.ANY_SOURCE, tag=_WORKTAG,
-                    status=status)
-            _comm.send(item, dest=status.Get_source(), tag=_WORKTAG)
-            yield result
-        
-        for i in range(outstanding):
-            result = _comm.recv(source=MPI.ANY_SOURCE, tag=_WORKTAG,
-                    status=status)
-            yield result
-
-    def close(self):
-        self.__exit__()
-
-    def _tracker(self, envelope):
-        order, arg = envelope
-        return order, self._function(*arg)
-
-    def _umApply(self, *args):
-        if _rank == _MASTER:
-            cache = {}
-            upto = 0
-            for order, result in self._master(enumerate(izip(*args))):
-                cache[order] = result
-                while cache and min(cache) == upto:
-                    yield cache[upto]
-                    del cache[upto]
-                    upto += 1
-
-    def _numApply(self, *args):
-        return imap(lambda arg: self._function(*arg), izip(*args))
 
 def main():
     return 0

@@ -8,6 +8,8 @@ from socket import gethostname
 
 from pymongo import MongoClient
 
+import masterslave
+
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2015, Ben Kaehler'
 __credits__ = ['Ben Kaehler']
@@ -15,7 +17,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.1-dev'
+__version__ = '0.0.2-dev'
 
 def setup_logging(log_level=None, output_collection=None, db_host=None,
         log_name=None, **kw):
@@ -35,7 +37,7 @@ def setup_logging(log_level=None, output_collection=None, db_host=None,
         return handler.getClient()
     except:
         sys.stderr.write(' Unable to set up logging:\n' + format_exc())
-        sys.exit(1)
+        masterslave.exit(1)
 
 class MongoHandler(Handler):
     def __init__(self, host, database, collection, **kw):

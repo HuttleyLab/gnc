@@ -19,7 +19,7 @@ __license__ = 'GPL'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Production'
-__version__ = '0.0.11-dev'
+__version__ = '0.0.12-dev'
 
 def test_farm():
     size = masterslave.size()
@@ -104,45 +104,6 @@ def test_map_gav():
     
     for n in [size//2, size-1, size, size*2]:
         test_n(n)
-
-def test_gang_gav():
-    size = masterslave.size()
-
-    def func(d1, d2):
-        return d1, d2, masterslave.rank()
-
-    def test_n(n):
-        array = range(n)
-        with masterslave.Gang(func) as gang:
-            result = gang.apply(array, array)
-            if result:
-                result = list(result)
-                if result:
-                    output, output1, ranks = zip(*result)
-                    assert_equal(output, output1)
-                    assert_equal(list(output), array)
-                    proper_ranks = set(range(min(size-1, 1), min(n+1, size)))
-                    assert_equal(set(ranks), proper_ranks)
-    
-    for n in [size//2, size-1, size, size*2]:
-        test_n(n)
-
-    def test_n(n):
-        array = range(n)
-        result = gang.apply(array, array)
-        if result:
-            result = list(result)
-            if result:
-                output, output1, ranks = zip(*result)
-                assert_equal(output, output1)
-                assert_equal(list(output), array)
-                proper_ranks = set(range(min(size-1, 1), min(n+1, size)))
-                assert_equal(set(ranks), proper_ranks)
-    
-    with masterslave.Gang(func) as gang:
-        if masterslave.am_master():
-            for n in [size//2, size-1, size, size*2]:
-                test_n(n)
 
 def test_imap():
     size = masterslave.size()

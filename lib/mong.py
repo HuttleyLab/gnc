@@ -14,16 +14,12 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.10-dev'
+__version__ = '0.0.11-dev'
 
 def get_collection(db_host=None, collection=None, **kw):
-    try:
-        client = MongoClient('mongodb://' + db_host)
-        database, collection = collection.split('.', 1)
-        return client[database][collection]
-    except:
-        logging.critical('Couldn\'t get connection to ' + db_host + ':\n' + \
-                format_exc())
+    client = MongoClient('mongodb://' + db_host)
+    database, collection = collection.split('.', 1)
+    return client[database][collection]
 
 def map_collection(func, input_collections, output_collections, no_mpi=False,
         **kwargs):

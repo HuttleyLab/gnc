@@ -24,7 +24,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.8-dev'
+__version__ = '0.0.9-dev'
 
 _versions = {
         'map_collection'    : __version__,
@@ -107,10 +107,14 @@ def main():
     args = setup()
     kwargs = vars(args)
 
-    input_collections = [get_collection(collection=c, **kwargs)
-            for c in args.input_collections]
-    output_collections = [get_collection(collection=c, **kwargs)
-            for c in args.output_collections]
+    try:
+        input_collections = [get_collection(collection=c, **kwargs)
+                for c in args.input_collections]
+        output_collections = [get_collection(collection=c, **kwargs)
+                for c in args.output_collections]
+    except:
+        logging.critical('MongoDB connection failed:\n' + format_exc())
+        masterslave.exit(1)
 
     if args.start_over:
         [col.drop() for col in output_collections]
