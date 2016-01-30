@@ -22,6 +22,17 @@ All code should be run in place; all examples below assume that you're in the sr
 * [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface) whichever implementation you prefer
 * [mpi4py](http://mpi4py.scipy.org) v1.3.1 or later
 
+#### Let's get explicit
+
+```
+mkvirtualenv nonstationary_codon
+pip install cython
+pip install numpy
+pip install pymongo
+pip install mpi4py
+pip install git+https://github.com/pycogent/pycogent
+```
+
 #### Database configuration
 The example below assumes that you have a mongodb server running on `$DB_HOST`.
 
