@@ -23,7 +23,7 @@ __license__ = 'GPL'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Production'
-__version__ = '0.0.3-dev'
+__version__ = '0.0.4-dev'
 
 class CalcQd(object):
     def __init__(self, exp, calcExMat, word_probs, mprobs_matrix, *params):
@@ -156,8 +156,7 @@ def _fit(aln, tree, model, gc, ingroup):
     last_lf = nest.deflate_likelihood_function(last_lf, save_jsd=False)
 
     if model in ('GNCClock', 'Y98GTR', 'NGClock'):
-        kwargs = dict(optimise_motif_probs=True)
-        sm = eval(model)(**kwargs)
+        sm = eval(model)(optimise_motif_probs=True, gc=gc)
     else:
         raise NotImplementedError(model + ' not supported')
     lf = sm.makeLikelihoodFunction(tree)
