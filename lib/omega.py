@@ -13,7 +13,7 @@ __license__ = 'GPL'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Production'
-__version__ = '0.0.1-dev'
+__version__ = '0.0.2-dev'
 
 def _fit_init(aln, tree, model, gc, outgroup, **kw):
     if model == 'Y98':
@@ -26,6 +26,8 @@ def _fit_init(aln, tree, model, gc, outgroup, **kw):
     lf.setAlignment(aln)
     with lf.updatesPostponed():
         lf.setParamRule('omega', is_independent=True, edge=outgroup)
+        ingroup = [t for t in aln.Names if t != outgroup]
+        lf.setParamRule('omega', is_independent=False, edges=ingroup)
         for param in lf.getParamNames():
             if '/' in param:
                 lf.setParamRule(param, **kw)
@@ -50,6 +52,8 @@ def _fit(aln, tree, model, gc, outgroup):
     lf.setAlignment(aln)
     _populate_parameters(lf, last_lf, **sp_kw)
     lf.setParamRule('omega', is_independent=True, edge=outgroup)
+    ingroup = [t for t in aln.Names if t != outgroup]
+    lf.setParamRule('omega', is_independent=False, edges=ingroup)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
     flat_lf = nest.deflate_likelihood_function(lf)
     flat_lf['hard_up'] = _is_hard_up(lf)
