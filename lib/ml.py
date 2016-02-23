@@ -354,7 +354,7 @@ def _fit(aln, tree, model, gc, omega_indep):
     lf = sm.makeLikelihoodFunction(tree)
     lf.setAlignment(aln)
     _populate_parameters(lf, last_lf, **sp_kw)
-    lf.setParaRule('omega', is_independent=omega_indep)
+    lf.setParamRule('omega', is_independent=omega_indep)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
     flat_lf = nest.deflate_likelihood_function(lf)
     flat_lf['hard_up'] = _is_hard_up(lf)
@@ -371,7 +371,8 @@ def ml(doc, model='NG', gc=None, omega_indep=True, **kw):
         aln = aln.filtered(lambda x: set(''.join(x))<=set(DNA), motif_length=3)
 
     flat_lf, time = _fit(aln, tree, model, code, omega_indep)
-    return {'lf' : flat_lf, 'time' : time, 'model' : model, 'gc' : code.Name}
+    return {'lf' : flat_lf, 'time' : time, 'model' : model, 'gc' : code.Name,
+            'omega_indep' : omega_indep}
 
 def ml_bootstraps(empirical, num_bootstraps=100, use_mpi=True):
     assert empirical['model'] in \
