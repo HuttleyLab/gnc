@@ -215,7 +215,7 @@ class MonkeyPatchLikelihoodFunction(AlignmentLikelihoodFunction):
             return DictArrayTemplate(edges, self._mprob_motifs).wrap(values)
         return DictArrayTemplate(edges, self._motifs).wrap(values)
 
-def _fit_init(aln, tree, model, gc, **kw):
+def _fit_init(aln, tree, model, gc, omega_indep, **kw):
     if model == 'NG':
         sm = GTR(optimise_motif_probs=True)
     elif model in ('NFG', 'MG94G', 'MG94GTR', 'GNC', 'Y98GTR'):
@@ -231,7 +231,7 @@ def _fit_init(aln, tree, model, gc, **kw):
             if '/' in param:
                 lf.setParamRule(param, **kw)
     if model in ('CNFGTR', 'Y98'): # set the omegas to be independent
-        lf.setParamRule('omega', is_independent=True)
+        lf.setParamRule('omega', is_independent=omega_indep)
         lf.setParamRule('length', is_independent=True)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
     return lf
@@ -334,10 +334,10 @@ def get_genetic_code(code_name):
     return code
 
 @timed
-def _fit(aln, tree, model, gc):
+def _fit(aln, tree, model, gc, omega_indep):
     sp_kw = dict(upper=20., lower=0.05, is_independent=False) 
 
-    last_lf = _fit_init(aln, tree, model, gc, **sp_kw)
+    last_lf = _fit_init(aln, tree, model, gc, omega_indep, **sp_kw)
     if model in ('CNFGTR', 'MG94GTR', 'Y98'):
         flat_lf = nest.deflate_likelihood_function(last_lf)
         flat_lf['hard_up'] = _is_hard_up(last_lf)
@@ -354,12 +354,13 @@ def _fit(aln, tree, model, gc):
     lf = sm.makeLikelihoodFunction(tree)
     lf.setAlignment(aln)
     _populate_parameters(lf, last_lf, **sp_kw)
+    lf.setParaRule('omega', is_independent=omega_indep)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
     flat_lf = nest.deflate_likelihood_function(lf)
     flat_lf['hard_up'] = _is_hard_up(lf)
     return flat_lf
 
-def ml(doc, model='NG', gc=None, **kw):
+def ml(doc, model='NG', gc=None, omega_indep=True, **kw):
     aln = LoadSeqs(data=doc['aln'].encode('utf-8'), moltype=DNA)
     tree = LoadTree(treestring=doc['tree'].encode('utf-8'))
 
@@ -369,7 +370,7 @@ def ml(doc, model='NG', gc=None, **kw):
         aln = aln.withoutTerminalStopCodons(code)
         aln = aln.filtered(lambda x: set(''.join(x))<=set(DNA), motif_length=3)
 
-    flat_lf, time = _fit(aln, tree, model, code)
+    flat_lf, time = _fit(aln, tree, model, code, omega_indep)
     return {'lf' : flat_lf, 'time' : time, 'model' : model, 'gc' : code.Name}
 
 def ml_bootstraps(empirical, num_bootstraps=100, use_mpi=True):

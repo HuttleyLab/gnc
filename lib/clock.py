@@ -122,7 +122,7 @@ class GNCClock(GeneralClocklike, Codon):
                 **kw)
         self.clocklike = True
 
-def _fit_init(aln, tree, model, gc, ingroup, **kw):
+def _fit_init(aln, tree, model, gc, ingroup, omega_indep, **kw):
     if model == 'NGClock':
         sm = GTR(optimise_motif_probs=True)
     elif model == 'CNFGTR': # CNFGTR nests no models here
@@ -139,16 +139,16 @@ def _fit_init(aln, tree, model, gc, ingroup, **kw):
             if '/' in param:
                 lf.setParamRule(param, **kw)
     if model in ('CNFGTR', 'Y98'):
-        lf.setParamRule('omega', is_independent=True)
+        lf.setParamRule('omega', is_independent=omega_indep)
         lf.setParamRule('length', is_independent=False, edges=ingroup)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
     return lf
 
 @timed
-def _fit(aln, tree, model, gc, ingroup):
+def _fit(aln, tree, model, gc, ingroup, omega_indep):
     sp_kw = dict(upper=20., lower=0.05, is_independent=False)
 
-    last_lf = _fit_init(aln, tree, model, gc, ingroup, **sp_kw)
+    last_lf = _fit_init(aln, tree, model, gc, ingroup, omega_indep, **sp_kw)
     if model in ('CNFGTR', 'MG94GTR', 'Y98'):
         flat_lf = nest.deflate_likelihood_function(last_lf)
         flat_lf['hard_up'] = _is_hard_up(last_lf)
@@ -162,13 +162,14 @@ def _fit(aln, tree, model, gc, ingroup):
     lf = sm.makeLikelihoodFunction(tree)
     lf.setAlignment(aln)
     _populate_parameters(lf, last_lf, **sp_kw)
+    lf.setParamRule('omega', is_independent=omega_indep)
     lf.setParamRule('length', is_independent=False, edges=ingroup)
     lf.optimise(local=True, show_progress=False, limit_action='raise')
     flat_lf = nest.deflate_likelihood_function(lf)
     flat_lf['hard_up'] = _is_hard_up(lf)
     return flat_lf
 
-def ml(doc, model='GNCClock', gc=None, outgroup=None, **kw):
+def ml(doc, model='GNCClock', gc=None, outgroup=None, omega_indep=True, **kw):
     aln = LoadSeqs(data=doc['aln'].encode('utf-8'), moltype=DNA)
     tree = LoadTree(treestring=doc['tree'].encode('utf-8'))
 
@@ -179,5 +180,5 @@ def ml(doc, model='GNCClock', gc=None, outgroup=None, **kw):
         aln = aln.filtered(lambda x: set(''.join(x))<=set(DNA), motif_length=3)
 
     ingroup = [t for t in aln.Names if t != outgroup]
-    flat_lf, time = _fit(aln, tree, model, code, ingroup=ingroup)
+    flat_lf, time = _fit(aln, tree, model, code, ingroup, omega_indep)
     return {'lf' : flat_lf, 'time' : time, 'model' : model, 'gc' : code.Name}
