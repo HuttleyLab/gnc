@@ -28,7 +28,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.11-dev'
+__version__ = '0.0.12-dev'
 
 class GeneralCalcQ(object):
     def calcQ(self, word_probs, mprobs_matrix, *params):
@@ -407,3 +407,34 @@ def ml_bootstraps(empirical, num_bootstraps=100, use_mpi=True):
 
     return extract_result(map(bootstrap, emp_gen))
 
+def rooted(doc, rooted_edges=None, gc=None, **kw):
+    aln = LoadSeqs(data=doc['aln'].encode('utf-8'), moltype=DNA)
+    tree = LoadTree(treestring=doc['tree'].encode('utf-8'))
+
+    code = get_genetic_code(gc)
+    aln = aln.withoutTerminalStopCodons(code)
+    aln = aln.filtered(lambda x: set(''.join(x))<=set(DNA), motif_length=3)
+
+    sp_kw = dict(upper=20., lower=0.05, is_independent=False)
+    sm = MG94GTR(optimise_motif_probs=True)
+    init_lf = sm.makeLikelihoodFunction(tree)
+    init_lf.setAlignment(aln)
+    with init_lf.updatesPostponed():
+        for param in init_lf.getParamNames():
+            if '/' in param:
+                init_lf.setParamRule(param, **sp_kw)
+    init_lf.setParamRule('length', edges=rooted_edges, is_independent=False)
+    init_lf.optimise(local=True, show_progress=False, limit_action='raise')
+    init_lf = nest.deflate_likelihood_function(init_lf, save_jsd=False)
+    sm = GNC(optimise_motif_probs=True)
+    lf = sm.makeLikelihoodFunction(tree)
+    lf.setAlignment(aln)
+    _populate_parameters(lf, init_lf, **sp_kw)
+    for param in lf.getParamNames():
+        if '>' in param or param == 'omega':
+            lf.setParamRule(param, edges=rooted_edges, is_independent=False)
+    lf.optimise(local=True, show_progress=False, limit_action='raise')
+    flat_lf = nest.deflate_likelihood_function(lf)
+    flat_lf['hard_up'] = _is_hard_up(lf)
+
+    return {'lf' : flat_lf, 'gc' : code.Name, 'rooted_edges' : rooted_edges}
