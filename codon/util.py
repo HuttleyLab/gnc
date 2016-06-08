@@ -1,5 +1,6 @@
 from gzip import GzipFile
-from cogent import LoadSeqs
+
+from cogent import LoadSeqs, DNA
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2016, Ben Kaehler'

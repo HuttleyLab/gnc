@@ -23,7 +23,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.10-dev'
+__version__ = '0.0.11-dev'
 
 _versions = {
         'map_collection'    : __version__,
@@ -35,7 +35,7 @@ _versions = {
 def import_function(args):
     module_name, function_name = args.function.rsplit('.', 1)
     module = import_module(module_name)
-    _versions[module_name] = module.__version__
+    _versions[module_name.replace('.','_')] = module.__version__
     args.function = getattr(module, function_name)
     return function_name
 

@@ -111,7 +111,7 @@ def setup_logging(log_level=None, output_collection=None, db_host=None,
 def import_function(args):
     module_name, function_name = args.function.rsplit('.', 1)
     module = import_module(module_name)
-    _versions[module_name] = module.__version__
+    _versions[module_name.replace('.','_')] = module.__version__
     args.function = getattr(module, function_name)
     return function_name
 
