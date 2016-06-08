@@ -16,10 +16,9 @@ filterwarnings('ignore', 'Not using MPI', UserWarning)
 
 from pymongo import MongoClient
 
-import lib
-import masterslave
-from monglog import MongoFormatter, __version__ as monglog_version
-from mong import map_collection, __version__ as mong_version
+from codon import masterslave
+from codon.monglog import MongoFormatter, __version__ as monglog_version
+from codon.mong import map_collection, __version__ as mong_version
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2015, Ben Kaehler'
@@ -28,7 +27,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.1-dev'
+__version__ = '0.0.2-dev'
 
 _versions = {
         'map_collection_slowly'    : __version__,

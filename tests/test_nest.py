@@ -13,8 +13,7 @@ from cogent.evolve.substitution_model import General, GeneralStationary
 from cogent.evolve.models import GTR
 from cogent import LoadSeqs, DNA, Alignment
 
-import lib
-import nest
+from codon import nest
 from data import get_data_dir
 
 __author__ = 'Ben Kaehler'

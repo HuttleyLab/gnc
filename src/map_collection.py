@@ -12,10 +12,9 @@ from warnings import filterwarnings
 os.environ['DONT_USE_MPI'] = '1'
 filterwarnings('ignore', 'Not using MPI', UserWarning)
 
-import lib
-import masterslave
-from monglog import setup_logging, __version__ as monglog_version
-from mong import get_collection, map_collection, __version__ as mong_version
+from codon import masterslave
+from codon.monglog import setup_logging, __version__ as monglog_version
+from codon.mong import get_collection, map_collection, __version__ as mong_version
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2015, Ben Kaehler'
@@ -24,7 +23,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.9-dev'
+__version__ = '0.0.10-dev'
 
 _versions = {
         'map_collection'    : __version__,

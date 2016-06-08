@@ -6,10 +6,9 @@ from cogent import LoadTree, DNA, Alignment
 from numpy.testing import assert_array_almost_equal, assert_almost_equal
 import numpy as np
 
-import lib
 from data import get_data_dir
-from general_ben import GeneralBen
-from nest import (inflate_likelihood_function, populate_parameters,
+from codon.general_ben import GeneralBen
+from codon.nest import (inflate_likelihood_function, populate_parameters,
         get_expected_no_subs, deflate_likelihood_function)
 
 __author__ = 'Ben Kaehler'

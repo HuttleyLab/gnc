@@ -10,9 +10,8 @@ from cogent.evolve.models import GTR
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from numpy import log, array
 
-import lib
 from data import get_data_dir
-import jsd
+from codon import jsd
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2014, Ben Kaehler'

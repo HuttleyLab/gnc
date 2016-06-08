@@ -6,8 +6,7 @@ from numpy import random, eye, array, empty, diag, allclose, log, sqrt
 from numpy.testing import assert_allclose
 from scipy.linalg import expm, det
 
-import lib
-import spectrad
+from codon import spectrad
 
 
 def gen_Q(n, pi):

@@ -5,11 +5,8 @@ from nose.tools import assert_equal
 from numpy.testing import assert_almost_equal
 
 from data import get_data_dir
-import lib
-import src
-import ml
-import consume
-from nest import inflate_likelihood_function, deflate_likelihood_function
+from codon import ml, util
+from codon.nest import inflate_likelihood_function, deflate_likelihood_function
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2015, Ben Kaehler'
@@ -25,7 +22,7 @@ def test_GNC():
         flat_lf = json.load(infile)
 
     lf = inflate_likelihood_function(flat_lf, ml.GNC)
-    aln = consume.get_aln(os.path.join(get_data_dir(),
+    aln = util.get_aln(os.path.join(get_data_dir(),
         'ENSG00000100393.fasta.gz'), codon_position=-1)
     lf.setAlignment(aln)
 

@@ -9,8 +9,7 @@ from shutil import rmtree
 import os
 import sys
 
-import lib
-import masterslave
+from codon import masterslave
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2015, Ben Kaehler'

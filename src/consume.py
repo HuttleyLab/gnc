@@ -3,18 +3,17 @@ import sys
 import logging
 from traceback import format_exc
 from glob import iglob
-from gzip import GzipFile
 from warnings import filterwarnings
 
 os.environ['DONT_USE_MPI'] = '1'
 filterwarnings('ignore', 'Not using MPI', UserWarning)
 
-from cogent import LoadSeqs, LoadTree, DNA, __version__ as cogent_version
+from cogent import LoadTree, DNA, __version__ as cogent_version
 
-import lib
-from monglog import setup_logging, __version__ as monglog_version
-import masterslave
-from mong import get_collection, __version__ as mong_version
+from codon.monglog import setup_logging, __version__ as monglog_version
+from codon import masterslave
+from codon.mong import get_collection, __version__ as mong_version
+from codon.util import get_aln
 
 __author__ = 'Ben Kaehler'
 __copyright__ = 'Copyright 2015, Ben Kaehler'
@@ -23,7 +22,7 @@ __license__ = 'GPL version 3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.5-dev'
+__version__ = '0.0.7-dev'
 
 _versions = {
         'consume' : __version__,
@@ -46,29 +45,6 @@ def files(input_directory=None, **kwargs):
         if filename.endswith('.fasta') or filename.endswith('.fasta.gz') or \
             filename.endswith('.fa.gz'):
                 yield(filename)
-
-def get_aln(filename, codon_position=None, **kw):
-    if filename.endswith('.gz'):
-        with GzipFile(filename) as fastafile:
-            fastadata = fastafile.read()
-    else:
-        with open(filename) as fastafile:
-            fastadata = fastafile.read()
-
-    sequences = LoadSeqs(data=fastadata)
-    if codon_position > 0:
-        c = codon_position
-        ix = [(i, i+1) for i in range(c-1, len(sequences), 3)]
-        pos = sequences.addFeature('pos', 'pos', ix)
-        sequences = pos.getSlice()
-
-    sequences = sequences.filtered(lambda x: set(''.join(x)) <= set(DNA),
-            motif_length=1 if codon_position > 0 else 3)
-
-    sequences = {t.replace('.', '_'):s for t, s in sequences.todict().items()}
-    sequences = LoadSeqs(data=sequences)
-
-    return sequences
 
 def get_tree(filename):
     tree = LoadTree(filename)
