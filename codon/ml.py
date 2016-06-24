@@ -17,7 +17,6 @@ from cogent.util.dict_array import DictArrayTemplate
 from cogent.core.genetic_code import GeneticCodes, GeneticCode, DEFAULT
 
 from timedec import timed
-import masterslave
 import nest
 assert nest.__version__ == '0.0.31-dev' # a bit hacky but will do for now
 
@@ -28,7 +27,7 @@ __license__ = 'GPLv3 or any later version'
 __maintainer__ = 'Ben Kaehler'
 __email__ = 'benjamin.kaehler@anu.edu.au'
 __status__ = 'Development'
-__version__ = '0.0.12-dev'
+__version__ = '0.0.13-dev'
 
 class GeneralCalcQ(object):
     def calcQ(self, word_probs, mprobs_matrix, *params):
@@ -400,6 +399,7 @@ def ml_bootstraps(empirical, num_bootstraps=100, use_mpi=True):
     emp_gen = (empirical for i in [None]*num_bootstraps)
 
     if use_mpi:
+        import masterslave
         bootstraps = masterslave.map(bootstrap, emp_gen)
         if masterslave.am_master():
             return extract_result(bootstraps)
