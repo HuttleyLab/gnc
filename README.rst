@@ -32,9 +32,8 @@ You can fit GNC from the paper_ using:
 
 The result will be in :code:`GNC.txt`:
 
-.. raw:: html
+.. code-block:: text
 
-  <div class="highlight-text" style="height: 200px;"><div class="highlight"><pre>
   Likelihood Function Table
   =============================================================================
      edge    parent    length       A>C       A>G       A>T       C>A       C>G
@@ -118,7 +117,6 @@ The result will be in :code:`GNC.txt`:
     GCG    0.0000
     GCT    0.0149
   ---------------
-  </pre></div></div>
 
 Installation
 ============
