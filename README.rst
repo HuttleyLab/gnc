@@ -200,10 +200,7 @@ Installation
 Documentation
 =============
 
-.. toctree::
-   :maxdepth: 2
-
-   codon
+On `Read the Docs <http://codon.readthedocs.org/en/latest/>`_.
 
 Support
 =======

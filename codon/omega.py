@@ -66,6 +66,8 @@ def _fit(aln, tree, model, gc, outgroup, neutral):
     flat_lf['hard_up'] = _is_hard_up(lf)
     return flat_lf
 
+MODELS = ('CNFGTR', 'Y98', 'GNC')
+
 def ml(doc, model='GNC', gc=None, outgroup=None, neutral=None, **kw):
     aln = LoadSeqs(data=doc['aln'].encode('utf-8'), moltype=DNA)
     tree = LoadTree(treestring=doc['tree'].encode('utf-8'))

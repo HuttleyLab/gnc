@@ -1,5 +1,6 @@
 import os
 from warnings import filterwarnings
+import zlib
 
 import click
 import json
@@ -26,8 +27,8 @@ def main():
 @click.argument('aln', type=click.File('rb'))
 @click.argument('tree', type=click.File('rb'))
 @click.argument('result', type=click.File('wb'))
-@click.option('--model', type=str, default='GNC', help='model to use',
-        show_default=True)
+@click.option('--model', type=click.Choice(ml.MODELS), default='GNC',
+        help='model to use', show_default=True)
 @click.option('--omega_indep/--not_omega_indep', default=True, 
         help='should omega vary by branch', show_default=True)
 @click.option('--genetic_code', type=str, default=DEFAULT.Name,
@@ -43,7 +44,7 @@ def fit(aln, tree, result, model, omega_indep, genetic_code, format):
     doc = {'tree':tree.read().strip(), 'aln':data}
     doc = ml.ml(doc, model=model, omega_indep=omega_indep, gc=genetic_code)
     if format == 'json':
-        json.dump(result, doc)
+        json.dump(doc, result)
     else:
         lf = nest.inflate_likelihood_function(doc['lf'], 
                 lambda: getattr(ml, model)())
@@ -63,15 +64,15 @@ def bootstrap(existing_fit, result, num_bootstraps, use_mpi):
     from codon fit """
     empirical = json.load(existing_fit)
     bootstraps = ml.ml_bootstraps(empirical, num_bootstraps, use_mpi)
-    json.dump(result, bootstraps)
+    json.dump(bootstraps, result)
     return 0
 
 @main.command(short_help='Fit a model to an alignment with omega constraints')
 @click.argument('aln', type=click.File('rb'))
 @click.argument('tree', type=click.File('rb'))
 @click.argument('result', type=click.File('wb'))
-@click.option('--model', type=str, default='GNC', help='model to use',
-        show_default=True)
+@click.option('--model', type=click.Choice(omega.MODELS), default='GNC',
+        help='model to use', show_default=True)
 @click.option('--genetic_code', type=str, default=DEFAULT.Name,
         help='PyCogent genetic code name or complete specification',
         show_default=True)
@@ -90,7 +91,7 @@ def omega(aln, tree, result, model, genetic_code, outgroup, neutral, format):
     doc = omega.ml(doc, model=model, gc=genetic_code, outgroup=outgroup,
             neutral=neutral)
     if format == 'json':
-        json.dump(result, doc)
+        json.dump(doc, result)
     else:
         lf = nest.inflate_likelihood_function(doc['lf'], 
                 lambda: getattr(ml, model)())
@@ -102,8 +103,8 @@ def omega(aln, tree, result, model, genetic_code, outgroup, neutral, format):
 @click.argument('tree', type=click.File('rb'))
 @click.argument('outgroup', type=str)
 @click.argument('result', type=click.File('wb'))
-@click.option('--model', type=str, default='GNCClock', help='model to use',
-        show_default=True)
+@click.option('--model', type=click.Choice(clock.MODELS), 
+        default='GNCClock', help='model to use', show_default=True)
 @click.option('--omega_indep/--not_omega_indep', default=True, 
         help='should omega vary by branch', show_default=True)
 @click.option('--genetic_code', type=str, default=DEFAULT.Name,
@@ -122,7 +123,7 @@ def clock(aln, tree, outgroup, result, model, omega_indep, genetic_code,
     doc = clock.ml(doc, model=model, gc=genetic_code, outgroup=outgroup,
             omega_indep=omega_indep)
     if format == 'json':
-        json.dump(result, doc)
+        json.dump(doc, result)
     else:
         lf = nest.inflate_likelihood_function(doc['lf'], 
                 lambda: getattr(ml, model)())
@@ -151,7 +152,7 @@ def rooted(aln, tree, result, genetic_code, format):
     doc = {'tree':treestring, 'aln':data}
     doc = ml.ml(doc, rooted_edges=rooted_edges, gc=genetic_code)
     if format == 'json':
-        json.dump(result,doc)
+        json.dump(doc, result)
     else:
         lf = nest.inflate_likelihood_function(doc['lf'], 
                 lambda: getattr(ml, model)())
