@@ -195,6 +195,7 @@ Installation
 
 .. code:: bash
 
+  pip install numpy # for PyCogent
   pip install codon
 
 Documentation
