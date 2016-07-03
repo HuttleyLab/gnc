@@ -10,7 +10,7 @@ There are several undocumented features of this package, such as interfacing wit
 .. _paper: https://peerj.com/preprints/2218/
 .. _MongoDB: https://en.wikipedia.org/wiki/MongoDB
 .. _MPI: https://en.wikipedia.org/wiki/Message_Passing_Interface
-.. _contact the author: https://bitbucket.org/nonstationary/codon/issues
+.. _post a ticket with your request: https://bitbucket.org/nonstationary/codon/issues
 .. _PyCogent: http://pycogent.org
 
 Example
