@@ -4,12 +4,45 @@ codon package
 Command Line Interface
 ----------------------
 
-.. program-output:: codon --help
+.. .. program-output:: codon --help
+
+.. code:: text
+
+  Usage: codon [OPTIONS] COMMAND [ARGS]...
+  
+  Options:
+    --help  Show this message and exit.
+  
+  Commands:
+    bootstrap  Parametric bootstraps for an existing fit
+    clock      Fit a clock-like model to an alignment
+    fit        Fit a model to an alignment
+    omega      Fit a model to an alignment with omega constraints
+    rooted     Fit a rooted model to an alignment
+
 
 fit
 ---
 
-.. program-output:: codon fit --help
+.. .. program-output:: codon fit --help
+
+.. code:: text
+
+  Usage: codon fit [OPTIONS] ALN TREE RESULT
+  
+    Fit the selected model to the input fasta ALN with the selected TREE  and
+    output the RESULT.
+  
+  Options:
+    --model [CNFGTR|MG94GTR|Y98|NG|NFG|MG94G|GNC|Y98GTR]
+                                    model to use  [default: GNC]
+    --omega_indep / --not_omega_indep
+                                    should omega vary by branch  [default: True]
+    --genetic_code TEXT             PyCogent genetic code name or complete
+                                    specification  [default: Standard Nuclear]
+    --format [json|cogent]          output format  [default: cogent]
+    --help                          Show this message and exit.
+
 
 :Example:
 
@@ -182,7 +215,23 @@ The result will be in :code:`GNC.txt`:
 bootstrap
 ---------
 
-.. program-output:: codon bootstrap --help
+.. .. program-output:: codon bootstrap --help
+
+.. code:: text
+
+  Usage: codon bootstrap [OPTIONS] EXISTING_FIT RESULT
+  
+    Simulate parametric bootstraps of EXISTING_FIT, refit in exactly the same
+    way then output to RESULT. EXISTING_FIT must be json format output from
+    codon fit
+  
+  Options:
+    --num_bootstraps INTEGER   number of parametric bootstraps to run  [default:
+                               100]
+    --use_mpi / --not_use_mpi  use MPI to parallelise bootstraps  [default:
+                               False]
+    --help                     Show this message and exit.
+
 
 :Example:
 
@@ -917,15 +966,68 @@ The output of the original fit is in :code:`GNC.json`:
 omega
 -----
 
-.. program-output:: codon omega --help
+.. .. program-output:: codon omega --help
+
+.. code:: text
+
+  Usage: codon omega [OPTIONS] ALN TREE RESULT
+  
+    Fit the selected model to the input fasta ALN with the selected TREE  and
+    output the RESULT, with specific constraints on omega.
+  
+  Options:
+    --model [CNFGTR|Y98|GNC]   model to use  [default: GNC]
+    --genetic_code TEXT        PyCogent genetic code name or complete
+                               specification  [default: Standard Nuclear]
+    --outgroup TEXT            constrain omega to be equal on all branches but
+                               this
+    --neutral / --not_neutral  constrain omega to be one for the whole tree
+                               [default: False]
+    --format [json|cogent]     output format  [default: cogent]
+    --help                     Show this message and exit.
+
 
 clock
 -----
 
-.. program-output:: codon clock --help
+.. .. program-output:: codon clock --help
+
+.. code:: text
+
+  Usage: codon clock [OPTIONS] ALN TREE OUTGROUP RESULT
+  
+    Fit the selected model to the input fasta ALN with the input TREE with
+    genetic distance constrained to be equal on all branches but the OUTGROUP
+    and output the RESULT.
+  
+  Options:
+    --model [CNFGTR|MG94GTR|Y98|GNCClock|Y98GTR|NGClock]
+                                    model to use  [default: GNCClock]
+    --omega_indep / --not_omega_indep
+                                    should omega vary by branch  [default: True]
+    --genetic_code TEXT             PyCogent genetic code name or complete
+                                    specification  [default: Standard Nuclear]
+    --format [json|cogent]          output format  [default: cogent]
+    --help                          Show this message and exit.
+
 
 rooted
 ------
 
-.. program-output:: codon rooted --help
+.. .. program-output:: codon rooted --help
+
+.. code:: text
+
+  Usage: codon rooted [OPTIONS] ALN TREE RESULT
+  
+    Fit GNC to the input fasta ALN with the selected TREE and output the
+    RESULT. Parameters other than the scale parameter are constrained to be
+    equal on branches connected to the root.
+  
+  Options:
+    --genetic_code TEXT     PyCogent genetic code name or complete specification
+                            [default: Standard Nuclear]
+    --format [json|cogent]  output format  [default: cogent]
+    --help                  Show this message and exit.
+
 
