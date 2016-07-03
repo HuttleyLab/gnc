@@ -15,7 +15,7 @@ It was used to produce the results in our paper_ on the subject.
 
 There are several undocumented features of this package, such as interfacing with MongoDB_ databases, processing large datasets in parallel using MPI_, and accessing our extensions of PyCogent_ models programmatically using Python. If you would like information on any of these, please `post a ticket with your request`_.
 
-.. _paper: https://peerj.com/preprints/
+.. _paper: https://peerj.com/preprints/2218/
 .. _MongoDB: https://en.wikipedia.org/wiki/MongoDB
 .. _MPI: https://en.wikipedia.org/wiki/Message_Passing_Interface
 .. _contact the author: https://bitbucket.org/nonstationary/codon/issues
