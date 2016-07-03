@@ -152,12 +152,11 @@ def rooted(aln, tree, result, genetic_code, format):
     assert len(tree.Children) == 2, 'Tree must be edge-rooted'
     rooted_edges = [child.Name for child in tree.Children]
     doc = {'tree':treestring, 'aln':data}
-    doc = ml.ml(doc, rooted_edges=rooted_edges, gc=genetic_code)
+    doc = ml.rooted(doc, rooted_edges=rooted_edges, gc=genetic_code)
     if format == 'json':
         json.dump(doc, result)
     else:
-        lf = nest.inflate_likelihood_function(doc['lf'], 
-                lambda: getattr(ml, model)())
+        lf = nest.inflate_likelihood_function(doc['lf'], ml.GNC)
         result.write(str(lf)+'\n')
     return 0
 
