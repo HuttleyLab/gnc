@@ -13,7 +13,7 @@ Have you heard that time-reversible codon substitution models are biased when mu
 
 It was used to produce the results in our paper_ on the subject.
 
-There are several undocumented features of this package, such as interfacing with MongoDB_ databases, processing large datasets in parallel using MPI_, and accessing our extensions of PyCogent_ models programmatically using Python. If you would like information on any of these, please `contact the author`_, and I'll write some more documentation.
+There are several undocumented features of this package, such as interfacing with MongoDB_ databases, processing large datasets in parallel using MPI_, and accessing our extensions of PyCogent_ models programmatically using Python. If you would like information on any of these, please `post a ticket with your request`_.
 
 .. _paper: https://peerj.com/preprints/
 .. _MongoDB: https://en.wikipedia.org/wiki/MongoDB

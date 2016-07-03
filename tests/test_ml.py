@@ -28,4 +28,4 @@ def test_GNC():
 
     flat_again = deflate_likelihood_function(lf)
 
-    assert_equal(flat_lf['EN'], flat_again['EN'])
+    assert_almost_equal(flat_lf['EN'].values(), flat_again['EN'].values(), 9)

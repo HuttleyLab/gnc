@@ -11,7 +11,9 @@ filterwarnings('ignore', 'Not using MPI', UserWarning)
 from cogent.core.genetic_code import DEFAULT
 from cogent import LoadTree
 
-import ml, clock, omega
+import ml
+import clock as clock_module
+import omega as omega_module
 import nest
 
 def _decompress_if_zipped(data):
@@ -71,7 +73,7 @@ def bootstrap(existing_fit, result, num_bootstraps, use_mpi):
 @click.argument('aln', type=click.File('rb'))
 @click.argument('tree', type=click.File('rb'))
 @click.argument('result', type=click.File('wb'))
-@click.option('--model', type=click.Choice(omega.MODELS), default='GNC',
+@click.option('--model', type=click.Choice(omega_module.MODELS), default='GNC',
         help='model to use', show_default=True)
 @click.option('--genetic_code', type=str, default=DEFAULT.Name,
         help='PyCogent genetic code name or complete specification',
@@ -88,7 +90,7 @@ def omega(aln, tree, result, model, genetic_code, outgroup, neutral, format):
     data = aln.read()
     data = _decompress_if_zipped(data)
     doc = {'tree':tree.read().strip(), 'aln':data}
-    doc = omega.ml(doc, model=model, gc=genetic_code, outgroup=outgroup,
+    doc = omega_module.ml(doc, model=model, gc=genetic_code, outgroup=outgroup,
             neutral=neutral)
     if format == 'json':
         json.dump(doc, result)
@@ -103,7 +105,7 @@ def omega(aln, tree, result, model, genetic_code, outgroup, neutral, format):
 @click.argument('tree', type=click.File('rb'))
 @click.argument('outgroup', type=str)
 @click.argument('result', type=click.File('wb'))
-@click.option('--model', type=click.Choice(clock.MODELS), 
+@click.option('--model', type=click.Choice(clock_module.MODELS), 
         default='GNCClock', help='model to use', show_default=True)
 @click.option('--omega_indep/--not_omega_indep', default=True, 
         help='should omega vary by branch', show_default=True)
@@ -120,7 +122,7 @@ def clock(aln, tree, outgroup, result, model, omega_indep, genetic_code,
     data = aln.read()
     data = _decompress_if_zipped(data)
     doc = {'tree':tree.read().strip(), 'aln':data}
-    doc = clock.ml(doc, model=model, gc=genetic_code, outgroup=outgroup,
+    doc = clock_module.ml(doc, model=model, gc=genetic_code, outgroup=outgroup,
             omega_indep=omega_indep)
     if format == 'json':
         json.dump(doc, result)

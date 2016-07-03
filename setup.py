@@ -27,9 +27,8 @@ setup(
         keywords=['biology', 'genomics', 'statistics', 'phylogeny', 'evolution',
         'bioinformatics'],
         packages=['codon'],
-        install_requires=['numpy', 'click', 'cogent==1.5.3-dev'],
+        install_requires=['numpy', 'click', 'cogent'],
         extras_require={'mpi': 'mpi4py', 'mongodb':'pymongo'},
-        dependency_links=['https://github.com/GavinHuttley/pycogent/archive/master.zip#egg=cogent-1.5.3-dev'],
         entry_points={
             'console_scripts': ['codon=codon.cli:main'],
         },

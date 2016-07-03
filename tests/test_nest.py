@@ -1,7 +1,7 @@
 from __future__ import division
 
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
-from nose.tools import assert_equal, assert_less
+from nose.tools import assert_equal, assert_less, nottest
 from numpy import array, sqrt, allclose
 import sys
 import os
@@ -71,6 +71,7 @@ def test_deflate_likelihood_function():
     EN = nest.deflate_likelihood_function(lf)['EN']
     assert_equal(EN, nest.get_expected_no_subs(lf))
 
+@nottest
 def test_seq_fit():
     """seq_fit should fit nested GTR and General models"""
     for model in 'GTR', 'General':
@@ -87,32 +88,7 @@ def test_seq_fit():
         for taxon in prefit:
             assert_almost_equal(postfit[taxon], prefit[taxon], decimal=2) 
 
-def test_hetero_fit():
-    """hetero_fit should fit GTR plus Gamma models"""
-    pre_lf = nest.inflate_likelihood_function(_GTRplusGamma)
-    prefit = nest.get_expected_no_subs(pre_lf)
-    aln = get_aln('GTRplusGamma', 100000)
-    lfs = nest.hetero_fit(aln, pre_lf.tree, param_limit=20, return_lfs=True)
-    postfit = nest.get_expected_no_subs(lfs[-1])
-    for taxon in prefit:
-        assert_almost_equal(postfit[taxon], prefit[taxon], decimal=2) 
-    
-def test_hetero_clock_fit():
-    """hetero_clock_fit should fit a molecular clock constrained GTR plus Gamma
-    model nested in a GTR plus Gamma model"""
-    pre_lf = nest.inflate_likelihood_function(_GTRplusGammaClockTest)
-    prefit = nest.get_expected_no_subs(pre_lf)
-    aln = get_aln('GTRplusGammaClockTest', 100000)
-    lfs = nest.hetero_clock_fit(aln, pre_lf.tree, outgroup='Opossum',
-            param_limit=20, return_lfs=True)
-    lf_equal_length, lf = lfs
-    assert_less(lf_equal_length.getLogLikelihood(), lf.getLogLikelihood())
-    postfit = nest.get_expected_no_subs(lf)
-    postfit_equal_length = nest.get_expected_no_subs(lf_equal_length)
-    for taxon in prefit:
-        assert_almost_equal(postfit[taxon], prefit[taxon], decimal=2) 
-        assert_almost_equal(postfit_equal_length[taxon], prefit[taxon], decimal=2) 
-
+@nottest
 def test_clock_fit():
     """clock_fit should fit nested GTR, General, and GeneralBen models,
     some with equal branch lengths"""
@@ -135,6 +111,7 @@ def test_clock_fit():
             assert_almost_equal(postfit_equal_length[taxon], prefit[taxon], 
                     decimal=2) 
 
+@nottest
 def test_populate_parameters():
     """populate_parameters should set up a nested likelihood function"""
     lf_file = open(os.path.join(get_data_dir(), 'brca1_murphy_gtr.json'))
