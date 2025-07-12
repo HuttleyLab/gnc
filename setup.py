@@ -27,7 +27,7 @@ setup(
         keywords=['biology', 'genomics', 'statistics', 'phylogeny', 'evolution',
         'bioinformatics'],
         packages=['codon'],
-        install_requires=['numpy', 'click', 'cogent'],
+        install_requires=['numpy', 'click', 'cogent3'],
         extras_require={'mpi': 'mpi4py', 'mongodb':'pymongo'},
         entry_points={
             'console_scripts': ['codon=codon.cli:main'],
