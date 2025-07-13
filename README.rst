@@ -1,3 +1,8 @@
+IMPORTANT!
+==========
+
+This model is now available in `cogent3 <https://cogent3.org/doc/app/app_tutorials/evo-nstat-codon-model.html>`_.
+
 About
 =====
 
